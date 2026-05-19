@@ -1,0 +1,21 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@200;300;400;600;700;800&amp;display=swap');
+
+.collapse{
+  font-size: 19px;  
+   text-align: justify;
+  font-family: 'PT Sans', sans-serif !important;
+ }
+ .navbar-nav {
+  margin-left: auto;
+}
+#card{
+  box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+  height: 80vh;
+}
+#image_col{
+  background-color:hsl(215.61,93.03%,60.59%) ;
+  height: 80vh;
+}
+

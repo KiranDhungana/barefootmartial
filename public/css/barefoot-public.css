@@ -1,0 +1,381 @@
+/**
+ * Barefoot Martial Arts — public site styles
+ */
+:root {
+    --bf-navy: #0c1222;
+    --bf-navy-soft: #111827;
+    --bf-accent: #3b82f6;
+    --bf-accent-hover: #2563eb;
+    --bf-muted: #64748b;
+    --bf-border: #e2e8f0;
+    --bf-bg: #f8fafc;
+    --bf-card-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body.public-site {
+    font-family: "DM Sans", system-ui, sans-serif;
+    background: var(--bf-bg);
+    color: #0f172a;
+}
+
+/* ---------- Navbar ---------- */
+.site-navbar {
+    background: linear-gradient(180deg, var(--bf-navy) 0%, var(--bf-navy-soft) 100%) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
+    box-shadow: 0 4px 24px rgba(15, 23, 42, 0.12);
+}
+
+.site-navbar .navbar-brand img {
+    height: 46px;
+    width: auto;
+    max-width: 140px;
+    object-fit: contain;
+}
+
+.site-navbar .nav-link {
+    color: rgba(248, 250, 252, 0.82) !important;
+    font-weight: 500;
+    font-size: 0.94rem;
+    padding: 0.5rem 0.85rem !important;
+    border-radius: 999px;
+    transition: background 0.15s, color 0.15s;
+}
+
+.site-navbar .nav-link:hover {
+    color: #fff !important;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.site-navbar .nav-link.active {
+    color: #fff !important;
+    background: rgba(59, 130, 246, 0.25);
+}
+
+.site-navbar .navbar-toggler {
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.site-navbar .navbar-toggler-icon {
+    filter: invert(1);
+}
+
+.site-navbar .btn-nav-cta {
+    background: var(--bf-accent);
+    border: none;
+    color: #fff !important;
+    font-weight: 600;
+    padding: 0.45rem 1.1rem;
+    border-radius: 999px;
+    margin-left: 0.25rem;
+}
+
+.site-navbar .btn-nav-cta:hover {
+    background: var(--bf-accent-hover);
+    color: #fff !important;
+}
+
+/* ---------- Hero carousel ---------- */
+.hero-wrap {
+    position: relative;
+}
+
+.hero-carousel .carousel-item img {
+    width: 100%;
+    height: min(72vh, 560px);
+    object-fit: cover;
+}
+
+.hero-carousel .carousel-caption {
+    bottom: auto;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 0;
+    right: 0;
+    padding: 2rem 1rem;
+    background: linear-gradient(90deg, rgba(12, 18, 34, 0.85) 0%, transparent 75%);
+    text-align: left;
+    max-width: none;
+}
+
+.hero-carousel .carousel-caption .caption-inner {
+    max-width: 640px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+@media (min-width: 992px) {
+    .hero-carousel .carousel-caption .caption-inner {
+        margin-left: 8%;
+        margin-right: auto;
+    }
+}
+
+.hero-title {
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+    text-shadow: 0 2px 24px rgba(0, 0, 0, 0.35);
+}
+
+.hero-lead {
+    font-size: clamp(1rem, 2vw, 1.15rem);
+    opacity: 0.95;
+    max-width: 36ch;
+}
+
+.hero-carousel .carousel-control-prev,
+.hero-carousel .carousel-control-next {
+    width: 48px;
+    height: 48px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-radius: 50%;
+    background: rgba(15, 23, 42, 0.45);
+}
+
+/* ---------- Sections ---------- */
+.section-heading {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--bf-navy);
+    font-size: clamp(1.35rem, 2.5vw, 1.75rem);
+    margin-bottom: 1rem;
+    position: relative;
+    display: inline-block;
+}
+
+.section-heading::after {
+    content: "";
+    display: block;
+    height: 4px;
+    width: 48px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--bf-accent), #22c55e);
+    margin-top: 0.5rem;
+}
+
+.section-lead {
+    color: var(--bf-muted);
+    font-size: 1.05rem;
+    line-height: 1.65;
+}
+
+.card-soft {
+    background: #fff;
+    border: 1px solid var(--bf-border);
+    border-radius: 16px;
+    box-shadow: var(--bf-card-shadow);
+}
+
+.btn-bf-primary {
+    background: var(--bf-accent);
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    padding: 0.5rem 1.25rem;
+    border-radius: 999px;
+    transition: background 0.15s, transform 0.1s;
+}
+
+.btn-bf-primary:hover {
+    background: var(--bf-accent-hover);
+    color: #fff;
+}
+
+.btn-bf-outline {
+    border: 2px solid var(--bf-accent);
+    color: var(--bf-accent);
+    font-weight: 600;
+    padding: 0.45rem 1.15rem;
+    border-radius: 999px;
+    background: transparent;
+}
+
+.btn-bf-outline:hover {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--bf-accent-hover);
+    border-color: var(--bf-accent-hover);
+}
+
+/* ---------- Footer ---------- */
+.site-footer {
+    background: linear-gradient(180deg, var(--bf-navy-soft) 0%, #0a0f18 100%);
+    color: rgba(248, 250, 252, 0.88);
+    padding-top: 3rem;
+    padding-bottom: 2rem;
+}
+
+.site-footer h3 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #93c5fd;
+    margin-bottom: 1rem;
+}
+
+.site-footer a.footer-link {
+    color: rgba(248, 250, 252, 0.85);
+    text-decoration: none;
+    transition: color 0.15s;
+}
+
+.site-footer a.footer-link:hover {
+    color: #fff;
+}
+
+.site-footer .social-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+    transition: background 0.15s, transform 0.1s;
+}
+
+.site-footer .social-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.site-footer .contact-row {
+    display: flex;
+    gap: 0.65rem;
+    align-items: flex-start;
+    margin-bottom: 0.65rem;
+    font-size: 0.95rem;
+}
+
+.site-footer .contact-row i {
+    margin-top: 0.2rem;
+    color: #93c5fd;
+    width: 1.1rem;
+}
+
+.site-footer-bottom {
+    background: rgba(0, 0, 0, 0.35);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 1rem 0;
+    font-size: 0.85rem;
+    color: rgba(248, 250, 252, 0.65);
+}
+
+.site-footer-bottom a {
+    color: #93c5fd;
+    text-decoration: none;
+}
+
+.site-footer-bottom a:hover {
+    text-decoration: underline;
+}
+
+/* ---------- Gallery (scoped — no global img reset) ---------- */
+.gallery-section .gallery {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.gallery-section .gallery .images {
+    gap: 15px;
+    max-width: 1200px;
+    margin: 2rem auto;
+    columns: 5 260px;
+    list-style: none;
+    padding: 0;
+}
+
+.gallery-section .gallery .images .img {
+    display: flex;
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 14px;
+    border-radius: 12px;
+    break-inside: avoid;
+    box-shadow: var(--bf-card-shadow);
+}
+
+.gallery-section .gallery .images img {
+    width: 100%;
+    height: auto;
+    transition: transform 0.25s ease;
+}
+
+.gallery-section .gallery .images .img:hover img {
+    transform: scale(1.06);
+}
+
+.lightbox {
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1050;
+    position: fixed;
+    visibility: hidden;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+}
+
+.lightbox.show {
+    visibility: visible;
+}
+
+.lightbox .wrapper {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    width: 100%;
+    padding: 20px;
+    max-width: 900px;
+    background: #fff;
+    border-radius: 16px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, -50%) scale(0.94);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+}
+
+.lightbox.show .wrapper {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.lightbox .wrapper header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.lightbox .wrapper .preview-img img {
+    width: 100%;
+    border-radius: 12px;
+}
+
+.lightbox .close-icon {
+    cursor: pointer;
+    font-size: 1.5rem;
+    opacity: 0.7;
+}
+
+.lightbox .close-icon:hover {
+    opacity: 1;
+}
