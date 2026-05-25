@@ -67,6 +67,10 @@ class LoginController extends Controller
                 return redirect()->route('erp.dashboard');
             }
 
+            if ($user->canAccessParentPortal()) {
+                return redirect()->route('parent.dashboard');
+            }
+
             return redirect()->route('home');
         }
         return redirect()->route('login')->with('errormsg', 'Invalid credentials');

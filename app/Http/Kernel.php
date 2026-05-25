@@ -66,6 +66,9 @@ class Kernel extends HttpKernel
         'checkadmin' => \App\Http\Middleware\checkadmin::class,
         'erp' => \App\Http\Middleware\EnsureErpAccess::class,
         'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
+        'finance' => \App\Http\Middleware\EnsureCanManageFinance::class,
+        'super_admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
+        'parent' => \App\Http\Middleware\EnsureParentAccess::class,
         'prevent-back-history' => \App\Http\Middleware\PreventBackHistory::class,
     ];
 }

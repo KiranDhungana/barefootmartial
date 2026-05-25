@@ -18,5 +18,7 @@ class DatabaseSeeder extends Seeder
             ['code' => 'MAIN'],
             ['name' => 'Main branch']
         );
+
+        $this->call(InventorySeeder::class);
     }
 }

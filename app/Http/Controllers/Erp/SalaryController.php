@@ -15,7 +15,7 @@ class SalaryController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('admin');
+        $this->middleware('super_admin');
     }
 
     public function index(Request $request): View

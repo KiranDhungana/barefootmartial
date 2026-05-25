@@ -51,6 +51,12 @@
 
 <body>
     <div class="card">
+        @php $logoFile = config('academy.logo_path', 'images/logo.png'); $logoFull = public_path($logoFile); @endphp
+        @if (is_file($logoFull))
+            <div style="text-align:center;margin-bottom:6px;">
+                <img src="{{ $logoFull }}" alt="" style="max-height:36px;">
+            </div>
+        @endif
         <div class="row">
             <div style="display:table-cell; vertical-align:top; width:100px;">
                 @if ($student->photo_path && file_exists(public_path('storage/'.$student->photo_path)))

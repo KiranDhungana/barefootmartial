@@ -28,6 +28,18 @@
         </div>
         <div class="col-sm-6 col-xl-3">
             <div class="stat-card">
+                <div class="label">Official (central)</div>
+                <div class="value">{{ $officialStudents }}</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+                <div class="label">Pending registration</div>
+                <div class="value">{{ $pendingRegistration }}</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
                 <div class="label">Fees collected (period)</div>
                 <div class="value">{{ number_format($feesCollected, 2) }}</div>
             </div>

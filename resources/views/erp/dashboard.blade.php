@@ -2,9 +2,17 @@
 
 @section('title', 'Academy console')
 @section('page_title', 'Academy console')
-@section('page_subtitle', 'Overview')
+@section('page_subtitle', 'Branch console')
 
 @section('content')
+    @if (isset($inactiveStudents) && $inactiveStudents->isNotEmpty())
+        <div class="alert alert-warning border-0 rounded-4 mb-3">
+            <strong>{{ $inactiveStudents->count() }} inactive student(s)</strong> — no attendance in
+            {{ config('academy.attendance_inactive_days', 14) }}+ days.
+            <a href="{{ route('erp.attendance.index') }}" class="alert-link">View attendance</a>
+        </div>
+    @endif
+
     <div class="row g-3 mb-4">
         <div class="col-sm-6 col-xl-3">
             <div class="stat-card">
@@ -12,6 +20,11 @@
                     <div>
                         <div class="label">Students</div>
                         <div class="value">{{ $totalStudents }}</div>
+                        <div class="small text-muted mt-1">{{ $officialStudents }} official · {{ $pendingRegistration }} pending
+                            @if ($showFinance && $overdueCount > 0)
+                                · <span class="text-danger">{{ $overdueCount }} overdue</span>
+                            @endif
+                        </div>
                     </div>
                     <div class="icon-wrap bg-primary bg-opacity-10 text-primary">
                         <i class="fa-solid fa-user-graduate"></i>
@@ -19,6 +32,48 @@
                 </div>
             </div>
         </div>
+        @if ($user->isSuperAdmin())
+            <div class="col-sm-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="label">Branches</div>
+                            <div class="value">{{ $branchCount }}</div>
+                        </div>
+                        <div class="icon-wrap bg-info bg-opacity-10 text-info">
+                            <i class="fa-solid fa-building"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="label">New today</div>
+                            <div class="value">{{ $newToday }}</div>
+                        </div>
+                        <div class="icon-wrap bg-secondary bg-opacity-10 text-secondary">
+                            <i class="fa-solid fa-user-plus"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @elseif ($user->branch)
+            <div class="col-sm-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="label">Your branch</div>
+                            <div class="value fs-6 mt-1">{{ $user->branch->name }}</div>
+                        </div>
+                        <div class="icon-wrap bg-info bg-opacity-10 text-info">
+                            <i class="fa-solid fa-building"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
         @if ($showFinance)
             <div class="col-sm-6 col-xl-3">
                 <div class="stat-card">
@@ -64,8 +119,8 @@
                 <div class="stat-card">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <div class="label">Role</div>
-                            <div class="value fs-5 mt-1">Staff</div>
+                            <div class="label">Your role</div>
+                            <div class="value fs-6 mt-1">{{ $user->roleLabel() }}</div>
                         </div>
                         <div class="icon-wrap bg-secondary bg-opacity-10 text-secondary">
                             <i class="fa-solid fa-id-badge"></i>
@@ -96,8 +151,10 @@
                     <a href="{{ route('erp.students.create') }}" class="btn btn-admin-primary text-white">Add student</a>
                     <a href="{{ route('erp.attendance.index') }}" class="btn btn-outline-primary rounded-pill">Daily attendance</a>
                     @if ($showFinance)
-                        <a href="{{ route('erp.invoices.create') }}" class="btn btn-outline-primary rounded-pill">New invoice</a>
-                        <a href="{{ route('erp.reports.index') }}" class="btn btn-outline-secondary rounded-pill">Reports</a>
+                        <a href="{{ route('erp.invoices.create') }}" class="btn btn-outline-primary rounded-pill">Smart payment</a>
+                        <a href="{{ route('erp.fees.index') }}" class="btn btn-outline-secondary rounded-pill">Fee tracking</a>
+                        <a href="{{ route('erp.branch-reports.index') }}" class="btn btn-outline-secondary rounded-pill">Branch reports</a>
+                        <a href="{{ route('erp.belts.index') }}" class="btn btn-outline-secondary rounded-pill">Belts</a>
                     @endif
                     <a href="{{ route('two-factor.setup') }}" class="btn btn-outline-secondary rounded-pill">Two-factor auth</a>
                 </div>

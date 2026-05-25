@@ -42,6 +42,14 @@
             <td>{{ $totalStudents }}</td>
         </tr>
         <tr>
+            <td>Official students</td>
+            <td>{{ $officialStudents ?? '—' }}</td>
+        </tr>
+        <tr>
+            <td>Pending registration</td>
+            <td>{{ $pendingRegistration ?? '—' }}</td>
+        </tr>
+        <tr>
             <td>Fees collected (month)</td>
             <td>{{ number_format($feesCollected, 2) }}</td>
         </tr>

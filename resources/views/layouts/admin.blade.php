@@ -283,6 +283,50 @@
             filter: invert(1);
             opacity: 0.7;
         }
+
+        @media (max-width: 991.98px) {
+            .admin-content {
+                padding: 1rem 0.85rem 1.5rem;
+            }
+
+            .admin-page-heading h1 {
+                font-size: 1.15rem;
+            }
+
+            .stat-card .value {
+                font-size: 1.35rem;
+            }
+
+            .panel-card .panel-heading {
+                padding: 0.85rem 1rem;
+                font-size: 0.95rem;
+            }
+
+            .admin-table thead th,
+            .admin-table tbody td {
+                padding: 0.6rem 0.65rem;
+                font-size: 0.88rem;
+            }
+
+            .nav-tabs .nav-link {
+                font-size: 0.85rem;
+                padding: 0.5rem 0.75rem;
+            }
+
+            .btn.rounded-pill {
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .admin-topbar {
+                padding: 0.65rem 0.85rem;
+            }
+
+            .action-btns .btn {
+                width: 100%;
+            }
+        }
     </style>
     @stack('styles')
 </head>

@@ -2,29 +2,32 @@
 
 @section('title', 'Invoices')
 @section('page_title', 'Invoices')
-@section('page_subtitle', 'Fees')
 
 @section('content')
     <div class="d-flex flex-wrap justify-content-between gap-2 mb-3">
-        <form method="get" class="d-flex gap-2 align-items-center">
-            <select name="status" class="form-select rounded-3" style="width:auto" onchange="this.form.submit()">
+        <form method="get" class="d-flex gap-2">
+            <select name="status" class="form-select rounded-3" onchange="this.form.submit()">
                 <option value="">All statuses</option>
-                <option value="pending" @selected(request('status') === 'pending')>Pending</option>
-                <option value="paid" @selected(request('status') === 'paid')>Paid</option>
+                @foreach (config('academy.invoice_statuses', []) as $st)
+                    <option value="{{ $st }}" @selected(request('status') === $st)>{{ ucfirst($st) }}</option>
+                @endforeach
             </select>
         </form>
-        <a href="{{ route('erp.invoices.create') }}" class="btn btn-admin-primary text-white">New invoice</a>
+        <div class="d-flex gap-2">
+            <a href="{{ route('erp.fees.index') }}" class="btn btn-outline-secondary rounded-pill">Fee tracking</a>
+            <a href="{{ route('erp.invoices.create') }}" class="btn btn-admin-primary text-white">Smart payment entry</a>
+        </div>
     </div>
 
     <div class="panel-card">
-        <div class="panel-heading">Fee invoices</div>
         <div class="panel-body table-responsive">
             <table class="table admin-table mb-0">
                 <thead>
                     <tr>
-                        <th>Number</th>
+                        <th>Invoice</th>
                         <th>Student</th>
-                        <th>Amount</th>
+                        <th>Total</th>
+                        <th>Paid</th>
                         <th>Due</th>
                         <th>Status</th>
                         <th></th>
@@ -34,18 +37,26 @@
                     @forelse ($invoices as $invoice)
                         <tr>
                             <td class="fw-semibold">{{ $invoice->invoice_number }}</td>
-                            <td>{{ $invoice->student->name }}</td>
+                            <td>{{ $invoice->student->name ?? '—' }}</td>
                             <td>{{ number_format($invoice->amount, 2) }}</td>
-                            <td>{{ optional($invoice->due_date)->format('M j, Y') ?? '—' }}</td>
-                            <td><span
-                                    class="badge rounded-pill {{ $invoice->status === 'paid' ? 'bg-success' : 'bg-warning text-dark' }}">{{ ucfirst($invoice->status) }}</span>
+                            <td>{{ number_format($invoice->amount_paid, 2) }}</td>
+                            <td>{{ number_format($invoice->balanceDue(), 2) }}</td>
+                            <td>
+                                <span class="badge rounded-pill {{ match ($invoice->status) {
+                                    'paid' => 'bg-success',
+                                    'overdue' => 'bg-danger',
+                                    'partial' => 'bg-info',
+                                    default => 'bg-warning text-dark',
+                                } }}">{{ $invoice->statusLabel() }}</span>
                             </td>
-                            <td class="text-end"><a href="{{ route('erp.invoices.show', $invoice) }}"
-                                    class="btn btn-sm btn-outline-primary rounded-pill">View</a></td>
+                            <td class="text-end">
+                                <a href="{{ route('erp.invoices.show', $invoice) }}"
+                                    class="btn btn-sm btn-outline-primary rounded-pill">Open</a>
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-muted py-4 text-center">No invoices.</td>
+                            <td colspan="7" class="text-muted text-center py-4">No invoices.</td>
                         </tr>
                     @endforelse
                 </tbody>
