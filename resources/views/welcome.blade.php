@@ -26,7 +26,7 @@
                     </div>
                 </div>
                 <div class="carousel-item">
-                    <img src="{{ asset('images/ban1.jpg') }}" class="d-block w-100" alt="Academy facilities">
+                    <img src="{{ asset('images/ban3.jpg') }}" class="d-block w-100" alt="Academy facilities">
                     <div class="carousel-caption text-start">
                         <div class="caption-inner">
                             <h2 class="hero-title text-white mb-3">A community that lifts each other</h2>
