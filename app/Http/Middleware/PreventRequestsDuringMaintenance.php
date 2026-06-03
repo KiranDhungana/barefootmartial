@@ -1,11 +1,10 @@
 <?php
 
 namespace App\Http\Middleware;
-use App\Http\Controllers\Secondcontroller;
 
 use Closure;
 use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance as Middleware;
-
+use Symfony\Component\HttpFoundation\Response;
 
 class PreventRequestsDuringMaintenance extends Middleware
 {
@@ -17,11 +16,15 @@ class PreventRequestsDuringMaintenance extends Middleware
     protected $except = [
         //
     ];
-    public function handle($request, Closure $next)
+
+    public function handle($request, Closure $next): Response
     {
-        $response = $next($request);
-        return $response->header('Cache-Control', 'nocache, no-store, max-age=0, must-revalidate')
-            ->header('Pragma', 'no-cache')
-            ->header('Expires', 'Sun, 02 Jan 1990 00:00:00 GMT');
+        $response = parent::handle($request, $next);
+
+        $response->headers->set('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', 'Sun, 02 Jan 1990 00:00:00 GMT');
+
+        return $response;
     }
 }
