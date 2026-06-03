@@ -21,7 +21,10 @@
                             <h2 class="hero-title text-white mb-3">Barefoot Martial Arts Academy</h2>
                             <p class="hero-lead text-white mb-4">Build fitness, focus, and confidence — from fundamentals
                                 to advanced practice.</p>
-                            <a href="{{ route('contact') }}" class="btn btn-bf-primary btn-lg">Get in touch</a>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a href="{{ route('public.register') }}" class="btn btn-bf-primary btn-lg">Register as student</a>
+                                <a href="{{ route('contact') }}" class="btn btn-bf-outline btn-lg text-white border-white">Get in touch</a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -32,8 +35,10 @@
                             <h2 class="hero-title text-white mb-3">A community that lifts each other</h2>
                             <p class="hero-lead text-white mb-4">Taekwondo, boxing, Tang Soo Do and more — programmes for
                                 every age and level.</p>
-                            <a href="{{ url('about-us') }}" class="btn btn-bf-outline btn-lg text-white border-white">About
-                                us</a>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a href="{{ route('public.register') }}" class="btn btn-bf-primary btn-lg">Register as student</a>
+                                <a href="{{ url('about-us') }}" class="btn btn-bf-outline btn-lg text-white border-white">About us</a>
+                            </div>
                         </div>
                     </div>
                 </div>

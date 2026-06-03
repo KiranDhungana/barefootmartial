@@ -4,6 +4,7 @@
     $isContact = request()->routeIs('contact');
     $isAbout = request()->is('about-us');
     $isGallery = request()->is('gallary');
+    $isRegister = request()->routeIs('public.register');
 @endphp
 
 <nav class="navbar navbar-expand-lg navbar-dark site-navbar sticky-top">
@@ -32,6 +33,9 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {{ $isContact ? 'active' : '' }}" href="{{ route('contact') }}">Contact</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ $isRegister ? 'active' : '' }}" href="{{ route('public.register') }}">Register</a>
                 </li>
                 <li class="nav-item ms-lg-2">
                     @auth

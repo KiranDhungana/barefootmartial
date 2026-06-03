@@ -127,10 +127,6 @@ Route::middleware(['auth', 'erp'])->prefix('erp')->name('erp.')->group(function 
     Route::delete('events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
     Route::post('events/{event}/register', [EventController::class, 'registerStudent'])->name('events.register');
 
-    Route::get('online-registrations', [OnlineRegistrationController::class, 'index'])->name('online-registrations.index');
-    Route::post('online-registrations/{onlineRegistration}/status', [OnlineRegistrationController::class, 'updateStatus'])->name('online-registrations.status');
-    Route::post('online-registrations/{onlineRegistration}/convert', [OnlineRegistrationController::class, 'convert'])->name('online-registrations.convert');
-
     Route::get('students/{student}/parent-account', [ParentAccountController::class, 'create'])->name('parents.create');
     Route::post('students/{student}/parent-account', [ParentAccountController::class, 'store'])->name('parents.store');
 
@@ -174,6 +170,10 @@ Route::middleware(['auth', 'erp'])->prefix('erp')->name('erp.')->group(function 
     });
 
     Route::middleware('super_admin')->group(function () {
+        Route::get('online-registrations', [OnlineRegistrationController::class, 'index'])->name('online-registrations.index');
+        Route::post('online-registrations/{onlineRegistration}/status', [OnlineRegistrationController::class, 'updateStatus'])->name('online-registrations.status');
+        Route::post('online-registrations/{onlineRegistration}/convert', [OnlineRegistrationController::class, 'convert'])->name('online-registrations.convert');
+
         Route::resource('users', ErpUserController::class)->only(['index', 'create', 'store']);
         Route::resource('trainers', TrainerController::class)->except(['show']);
         Route::get('salary', [SalaryController::class, 'index'])->name('salary.index');

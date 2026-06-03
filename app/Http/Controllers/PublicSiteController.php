@@ -41,10 +41,13 @@ class PublicSiteController extends Controller
             'message' => 'nullable|string|max:1000',
         ]);
 
-        OnlineRegistration::create($data);
+        OnlineRegistration::create([
+            ...$data,
+            'status' => 'pending',
+        ]);
 
         return redirect()->route('public.register')
-            ->with('success', 'Thank you! We received your registration request and will contact you soon.');
+            ->with('success', 'Thank you! Your registration request was submitted. A super admin will review it and contact you once approved.');
     }
 
     public function events(): View

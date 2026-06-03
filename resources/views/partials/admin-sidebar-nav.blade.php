@@ -75,10 +75,12 @@
             <i class="fa-solid fa-trophy"></i>
             <span>Events</span>
         </a>
-        <a class="admin-nav-link {{ $erpOnlineReg ? 'active' : '' }}" href="{{ route('erp.online-registrations.index') }}">
-            <i class="fa-solid fa-globe"></i>
-            <span>Online signups</span>
-        </a>
+        @if ($isSuperAdmin)
+            <a class="admin-nav-link {{ $erpOnlineReg ? 'active' : '' }}" href="{{ route('erp.online-registrations.index') }}">
+                <i class="fa-solid fa-globe"></i>
+                <span>Online signups</span>
+            </a>
+        @endif
         <a class="admin-nav-link {{ $erpBelts ? 'active' : '' }}" href="{{ route('erp.belts.index') }}">
             <i class="fa-solid fa-medal"></i>
             <span>Belt promotions</span>
