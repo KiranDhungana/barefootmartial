@@ -87,20 +87,35 @@ class Student extends Model
         });
     }
 
-    public static function generateMembershipCode(bool $official = true): string
+    public static function generateMembershipCode(bool $official = true, ?int $excludeStudentId = null): string
     {
         $year = (int) now()->format('Y');
         $prefix = ($official ? config('academy.membership_prefix', 'BFN') : 'PRE').'-'.$year.'-';
-        $last = static::query()
-            ->where('student_code', 'like', $prefix.'%')
-            ->orderByDesc('id')
-            ->value('student_code');
-        $next = 1;
-        if ($last && preg_match('/^'.preg_quote($prefix, '/').'(\d+)$/', $last, $m)) {
-            $next = ((int) $m[1]) + 1;
+
+        $query = static::query()->where('student_code', 'like', $prefix.'%');
+        if ($excludeStudentId !== null) {
+            $query->where('id', '!=', $excludeStudentId);
         }
 
-        return $prefix.str_pad((string) $next, 4, '0', STR_PAD_LEFT);
+        $max = 0;
+        foreach ($query->pluck('student_code') as $code) {
+            if (preg_match('/^'.preg_quote($prefix, '/').'(\d+)$/', $code, $m)) {
+                $max = max($max, (int) $m[1]);
+            }
+        }
+
+        $next = $max + 1;
+        do {
+            $candidate = $prefix.str_pad((string) $next, 4, '0', STR_PAD_LEFT);
+            $exists = static::query()
+                ->where('student_code', $candidate)
+                ->when($excludeStudentId !== null, fn ($q) => $q->where('id', '!=', $excludeStudentId))
+                ->exists();
+            if (! $exists) {
+                return $candidate;
+            }
+            $next++;
+        } while (true);
     }
 
     public function isOfficial(): bool

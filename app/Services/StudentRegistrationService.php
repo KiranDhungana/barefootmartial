@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Student;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class StudentRegistrationService
@@ -41,25 +42,39 @@ class StudentRegistrationService
             ]);
         }
 
-        $old = $student->only(['registration_status', 'student_code', 'registered_at']);
+        return DB::transaction(function () use ($student, $by) {
+            $student = Student::query()->lockForUpdate()->findOrFail($student->id);
 
-        if (str_starts_with($student->student_code, 'PRE-')) {
-            $student->student_code = Student::generateMembershipCode();
-        }
+            if ($student->isOfficial()) {
+                return $student;
+            }
 
-        $student->registration_status = 'official';
-        $student->registered_at = now();
-        $student->registered_by = $by?->id ?? auth()->id();
-        if ($student->status === 'inactive') {
-            $student->status = 'active';
-        }
-        $student->save();
+            if (! $this->canMarkOfficial($student)) {
+                throw ValidationException::withMessages([
+                    'registration' => 'Complete all required fields before marking this student as officially registered.',
+                ]);
+            }
 
-        AuditLogger::log('student.marked_official', $student, $old, $student->only([
-            'registration_status', 'student_code', 'registered_at', 'registered_by',
-        ]));
+            $old = $student->only(['registration_status', 'student_code', 'registered_at']);
 
-        return $student;
+            if (str_starts_with($student->student_code, 'PRE-')) {
+                $student->student_code = Student::generateMembershipCode(true, $student->id);
+            }
+
+            $student->registration_status = Student::REG_OFFICIAL;
+            $student->registered_at = now();
+            $student->registered_by = $by?->id ?? auth()->id();
+            if ($student->status === Student::STATUS_INACTIVE) {
+                $student->status = Student::STATUS_ACTIVE;
+            }
+            $student->save();
+
+            AuditLogger::log('student.marked_official', $student, $old, $student->only([
+                'registration_status', 'student_code', 'registered_at', 'registered_by',
+            ]));
+
+            return $student;
+        });
     }
 
     public function assertOfficialForAction(Student $student, string $action): void
