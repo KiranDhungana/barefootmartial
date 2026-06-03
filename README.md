@@ -58,6 +58,24 @@ php artisan schedule:run   # via cron every minute
 
 Details in [FEATURES.md §23](FEATURES.md#23-automated-tasks-cron).
 
+## Server requirements (production)
+
+PHP extensions recommended:
+
+| Extension | Purpose |
+|-----------|---------|
+| **gd** | Logos and photos on PDFs (invoices, ID cards). Without it, PDFs still generate as text-only. |
+| **mbstring**, **openssl**, **pdo_mysql** | Laravel core |
+
+**Ubuntu / Debian:**
+
+```bash
+sudo apt install php-gd
+sudo systemctl restart php8.2-fpm   # or apache2 — match your PHP version
+```
+
+**Verify:** `php -m | grep gd`
+
 ## License
 
 Application code: project-specific. Laravel framework: [MIT](https://opensource.org/licenses/MIT).

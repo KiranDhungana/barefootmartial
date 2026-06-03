@@ -51,18 +51,22 @@
 
 <body>
     <div class="card">
-        @php $logoFile = config('academy.logo_path', 'images/logo.png'); $logoFull = public_path($logoFile); @endphp
-        @if (is_file($logoFull))
+        @php
+            use App\Support\PdfHelper;
+            $logoPath = PdfHelper::logoPath();
+            $photoUri = $student->photo_path
+                ? PdfHelper::publicStorageDataUri($student->photo_path)
+                : null;
+        @endphp
+        @if ($logoPath)
             <div style="text-align:center;margin-bottom:6px;">
-                <img src="{{ $logoFull }}" alt="" style="max-height:36px;">
+                <img src="{{ $logoPath }}" alt="" style="max-height:36px;">
             </div>
         @endif
         <div class="row">
             <div style="display:table-cell; vertical-align:top; width:100px;">
-                @if ($student->photo_path && file_exists(public_path('storage/'.$student->photo_path)))
-                    <img class="photo"
-                        src="data:image/jpeg;base64,{{ base64_encode(file_get_contents(public_path('storage/'.$student->photo_path))) }}"
-                        alt="">
+                @if ($photoUri)
+                    <img class="photo" src="{{ $photoUri }}" alt="">
                 @endif
             </div>
             <div style="display:table-cell; vertical-align:top; padding-left:8px;">
