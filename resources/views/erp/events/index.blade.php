@@ -14,7 +14,14 @@
                         <td>{{ optional($e->event_date)->format('M j, Y') ?? '—' }}</td>
                         <td>{{ $e->branch->name ?? 'All' }}</td>
                         <td>{{ $e->registrations->count() }}</td>
-                        <td class="text-end"><a href="{{ route('erp.events.show', $e) }}" class="btn btn-sm btn-outline-primary rounded-pill">Manage</a></td>
+                        <td class="text-end">
+                            <a href="{{ route('erp.events.show', $e) }}" class="btn btn-sm btn-outline-primary rounded-pill">Manage</a>
+                            <form method="post" action="{{ route('erp.events.destroy', $e) }}" class="d-inline" onsubmit="return confirm('Delete this event?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">Delete</button>
+                            </form>
+                        </td>
                     </tr>
                 @endforeach
             </tbody>

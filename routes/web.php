@@ -104,6 +104,12 @@ Route::middleware(['auth', 'erp'])->prefix('erp')->name('erp.')->group(function 
     Route::get('attendance/scan/{token}', [AttendanceController::class, 'scan'])->name('attendance.scan');
 
     Route::get('branches', [BranchController::class, 'index'])->name('branches.index');
+    Route::middleware('super_admin')->group(function () {
+        Route::get('branches/create', [BranchController::class, 'create'])->name('branches.create');
+        Route::post('branches', [BranchController::class, 'store'])->name('branches.store');
+        Route::get('branches/{branch}/edit', [BranchController::class, 'edit'])->name('branches.edit');
+        Route::put('branches/{branch}', [BranchController::class, 'update'])->name('branches.update');
+    });
     Route::get('branches/{branch}', [BranchController::class, 'show'])->name('branches.show');
     Route::get('schedules', [ScheduleController::class, 'index'])->name('schedules.index');
     Route::get('schedules/create', [ScheduleController::class, 'create'])->name('schedules.create');
@@ -118,6 +124,7 @@ Route::middleware(['auth', 'erp'])->prefix('erp')->name('erp.')->group(function 
     Route::get('events/{event}', [EventController::class, 'show'])->name('events.show');
     Route::get('events/{event}/edit', [EventController::class, 'edit'])->name('events.edit');
     Route::put('events/{event}', [EventController::class, 'update'])->name('events.update');
+    Route::delete('events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
     Route::post('events/{event}/register', [EventController::class, 'registerStudent'])->name('events.register');
 
     Route::get('online-registrations', [OnlineRegistrationController::class, 'index'])->name('online-registrations.index');
@@ -167,11 +174,6 @@ Route::middleware(['auth', 'erp'])->prefix('erp')->name('erp.')->group(function 
     });
 
     Route::middleware('super_admin')->group(function () {
-        Route::get('branches/create', [BranchController::class, 'create'])->name('branches.create');
-        Route::post('branches', [BranchController::class, 'store'])->name('branches.store');
-        Route::get('branches/{branch}/edit', [BranchController::class, 'edit'])->name('branches.edit');
-        Route::put('branches/{branch}', [BranchController::class, 'update'])->name('branches.update');
-
         Route::resource('users', ErpUserController::class)->only(['index', 'create', 'store']);
         Route::resource('trainers', TrainerController::class)->except(['show']);
         Route::get('salary', [SalaryController::class, 'index'])->name('salary.index');

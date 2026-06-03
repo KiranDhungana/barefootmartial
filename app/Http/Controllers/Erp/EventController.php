@@ -72,6 +72,14 @@ class EventController extends Controller
         return redirect()->route('erp.events.show', $event)->with('success', 'Event updated.');
     }
 
+    public function destroy(Event $event): RedirectResponse
+    {
+        $this->assertEventAccess($event);
+        $event->delete();
+
+        return redirect()->route('erp.events.index')->with('success', 'Event deleted.');
+    }
+
     public function registerStudent(Request $request, Event $event): RedirectResponse
     {
         $this->assertEventAccess($event);

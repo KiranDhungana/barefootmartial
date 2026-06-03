@@ -3,7 +3,14 @@
 @section('page_title', $event->title)
 @section('content')
     @if (session('success'))<div class="alert alert-success border-0 rounded-4">{{ session('success') }}</div>@endif
-    <a href="{{ route('erp.events.edit', $event) }}" class="btn btn-outline-primary rounded-pill mb-3">Edit event</a>
+    <div class="d-flex flex-wrap gap-2 mb-3">
+        <a href="{{ route('erp.events.edit', $event) }}" class="btn btn-outline-primary rounded-pill">Edit event</a>
+        <form method="post" action="{{ route('erp.events.destroy', $event) }}" class="d-inline" onsubmit="return confirm('Delete this event and all its registrations?');">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="btn btn-outline-danger rounded-pill">Delete event</button>
+        </form>
+    </div>
     <div class="row g-3">
         <div class="col-lg-5">
             <form method="post" action="{{ route('erp.events.register', $event) }}" class="panel-card p-4">
