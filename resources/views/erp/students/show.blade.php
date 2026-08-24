@@ -69,6 +69,10 @@
                             <p class="mb-1"><strong>Address:</strong> {{ $student->address ?? '—' }}</p>
                             <p class="mb-0"><strong>Join date:</strong>
                                 {{ optional($student->join_date)->format('M j, Y') ?? '—' }}</p>
+                            <p class="mb-0 mt-1"><strong>Monthly fee:</strong>
+                                Rs. {{ number_format((float) ($student->monthly_fee > 0 ? $student->monthly_fee : config('academy.default_monthly_fee', 0)), 2) }}
+                                <span class="text-muted">(auto from join date)</span>
+                            </p>
                         </div>
                     </div>
                     <hr>
@@ -201,7 +205,7 @@
                                 <td class="text-end">
                                     <a href="{{ route('erp.invoices.show', $inv) }}" class="btn btn-sm btn-outline-primary rounded-pill">Open</a>
                                     @if ($inv->balanceDue() > 0)
-                                        <a href="{{ route('erp.invoices.payment-slip', $inv) }}" class="btn btn-sm btn-outline-secondary rounded-pill">Slip</a>
+                                        <a href="{{ route('erp.invoices.payment-slip', $inv) }}" class="btn btn-sm btn-outline-secondary rounded-pill">Receipt</a>
                                     @endif
                                 </td>
                             </tr>
@@ -250,37 +254,153 @@
     @endif
 
     @if ($activeTab === 'certificates')
-        <div class="panel-card">
-            <div class="panel-heading">Belt certificates</div>
-            <div class="panel-body table-responsive">
-                <table class="table admin-table mb-0 small">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Belt</th>
-                            <th>Certificate</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($student->beltPromotions as $h)
-                            <tr>
-                                <td>{{ $h->promoted_at->format('M j, Y') }}</td>
-                                <td>{{ $h->from_belt ? $h->from_belt.' → ' : '' }}{{ $h->to_belt }}</td>
-                                <td>
-                                    @if ($h->certificate_number)
-                                        <a href="{{ route('erp.belts.certificate', [$student, $h->id]) }}">{{ $h->certificate_number }}</a>
-                                    @else
-                                        —
-                                    @endif
-                                </td>
-                            </tr>
+        <div class="row g-3">
+            <div class="col-lg-4">
+                <div class="panel-card">
+                    <div class="panel-heading">Attach certificate</div>
+                    <div class="panel-body p-4">
+                        <form method="post" action="{{ route('erp.students.certificates.store', $student) }}"
+                            enctype="multipart/form-data">
+                            @csrf
+                            <div class="mb-3">
+                                <label class="form-label">Title <span class="text-danger">*</span></label>
+                                <input type="text" name="title" class="form-control rounded-3" required
+                                    placeholder="e.g. School leaving certificate">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">File <span class="text-danger">*</span></label>
+                                <input type="file" name="file" accept=".pdf,image/*" class="form-control rounded-3" required>
+                                <div class="form-text">PDF or image — max 10 MB (Cloudinary)</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Issued on</label>
+                                <input type="date" name="issued_on" class="form-control rounded-3">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Notes</label>
+                                <textarea name="notes" rows="2" class="form-control rounded-3"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-admin-primary text-white w-100">
+                                <i class="fa-solid fa-paperclip me-1"></i> Attach certificate
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="panel-card mb-3">
+                    <div class="panel-heading">Attached certificates</div>
+                    <div class="panel-body p-3">
+                        @forelse ($student->certificates as $cert)
+                            <div class="border rounded-4 p-3 mb-3">
+                                <div class="row g-3 align-items-start">
+                                    <div class="col-md-3 text-center">
+                                        @if ($cert->isImage())
+                                            <a href="{{ $cert->file_url }}" target="_blank" rel="noopener">
+                                                <img src="{{ $cert->file_url }}" alt="{{ $cert->title }}"
+                                                    class="img-fluid rounded-3" style="max-height:100px;object-fit:cover">
+                                            </a>
+                                        @else
+                                            <a href="{{ $cert->file_url }}" target="_blank" rel="noopener"
+                                                class="btn btn-outline-secondary rounded-pill">
+                                                <i class="fa-solid fa-file-pdf me-1"></i> Open PDF
+                                            </a>
+                                        @endif
+                                    </div>
+                                    <div class="col-md-9">
+                                        <form method="post"
+                                            action="{{ route('erp.students.certificates.update', [$student, $cert]) }}"
+                                            enctype="multipart/form-data">
+                                            @csrf
+                                            @method('PUT')
+                                            <div class="row g-2">
+                                                <div class="col-md-6">
+                                                    <label class="form-label small">Title</label>
+                                                    <input type="text" name="title" class="form-control form-control-sm rounded-3"
+                                                        value="{{ $cert->title }}" required>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label small">Issued on</label>
+                                                    <input type="date" name="issued_on"
+                                                        class="form-control form-control-sm rounded-3"
+                                                        value="{{ optional($cert->issued_on)->format('Y-m-d') }}">
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="form-label small">Notes</label>
+                                                    <input type="text" name="notes" class="form-control form-control-sm rounded-3"
+                                                        value="{{ $cert->notes }}">
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <label class="form-label small">Replace file (optional)</label>
+                                                    <input type="file" name="file" accept=".pdf,image/*"
+                                                        class="form-control form-control-sm rounded-3">
+                                                </div>
+                                                <div class="col-md-4 d-flex align-items-end gap-2">
+                                                    <button type="submit"
+                                                        class="btn btn-sm btn-outline-primary rounded-pill">Save</button>
+                                                    <a href="{{ $cert->file_url }}" target="_blank" rel="noopener"
+                                                        class="btn btn-sm btn-outline-secondary rounded-pill">View</a>
+                                                </div>
+                                            </div>
+                                            <p class="small text-muted mb-0 mt-2">
+                                                {{ $cert->original_filename ?: 'File' }}
+                                                @if ($cert->uploader)
+                                                    · uploaded by {{ $cert->uploader->name }}
+                                                @endif
+                                                · {{ $cert->created_at->format('M j, Y') }}
+                                            </p>
+                                        </form>
+                                        <form method="post"
+                                            action="{{ route('erp.students.certificates.destroy', [$student, $cert]) }}"
+                                            class="mt-2"
+                                            onsubmit="return confirm('Remove this certificate?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                class="btn btn-sm btn-outline-danger rounded-pill">Delete</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
                         @empty
-                            <tr>
-                                <td colspan="3" class="text-muted">No promotions yet.</td>
-                            </tr>
+                            <p class="text-muted text-center py-3 mb-0">No certificates attached yet.</p>
                         @endforelse
-                    </tbody>
-                </table>
+                    </div>
+                </div>
+
+                <div class="panel-card">
+                    <div class="panel-heading">Belt certificates</div>
+                    <div class="panel-body table-responsive">
+                        <table class="table admin-table mb-0 small">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Belt</th>
+                                    <th>Certificate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($student->beltPromotions as $h)
+                                    <tr>
+                                        <td>{{ $h->promoted_at->format('M j, Y') }}</td>
+                                        <td>{{ $h->from_belt ? $h->from_belt.' → ' : '' }}{{ $h->to_belt }}</td>
+                                        <td>
+                                            @if ($h->certificate_number)
+                                                <a href="{{ route('erp.belts.certificate', [$student, $h->id]) }}">{{ $h->certificate_number }}</a>
+                                            @else
+                                                —
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3" class="text-muted">No belt promotions yet.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     @endif

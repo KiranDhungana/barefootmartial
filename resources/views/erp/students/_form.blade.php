@@ -120,6 +120,12 @@
                     value="{{ old('uniform_status', $s?->uniform_status) }}">
             </div>
             <div class="col-md-3">
+                <label class="form-label">Monthly fee (Rs.)</label>
+                <input type="number" step="0.01" min="0" name="monthly_fee"
+                    class="form-control rounded-3" value="{{ old('monthly_fee', $s?->monthly_fee ?? config('academy.default_monthly_fee', 1500)) }}">
+                <div class="form-text">Auto-billed each month from join / admission date.</div>
+            </div>
+            <div class="col-md-3">
                 <label class="form-label">Discount %</label>
                 <input type="number" step="0.01" min="0" max="100" name="discount_percent"
                     class="form-control rounded-3" value="{{ old('discount_percent', $s?->discount_percent ?? 0) }}">
@@ -151,6 +157,34 @@
     @endif
     <input type="file" name="photo" accept="image/*" class="form-control rounded-3">
 </div>
+@if (! $s)
+    <div class="panel-card mb-3">
+        <div class="panel-heading py-2 px-3 small">Certificates (optional)</div>
+        <div class="panel-body p-3">
+            <p class="small text-muted mb-3">Attach certificates at registration (PDF or image). You can add or edit more later from the student profile.</p>
+            @foreach (range(0, 2) as $i)
+                <div class="row g-2 align-items-end mb-2">
+                    <div class="col-md-5">
+                        <label class="form-label small">File</label>
+                        <input type="file" name="certificates[{{ $i }}][file]" accept=".pdf,image/*"
+                            class="form-control form-control-sm rounded-3">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small">Title</label>
+                        <input type="text" name="certificates[{{ $i }}][title]" class="form-control form-control-sm rounded-3"
+                            placeholder="e.g. Birth certificate" value="{{ old('certificates.'.$i.'.title') }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small">Issued on</label>
+                        <input type="date" name="certificates[{{ $i }}][issued_on]"
+                            class="form-control form-control-sm rounded-3"
+                            value="{{ old('certificates.'.$i.'.issued_on') }}">
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+@endif
 <div class="mb-4">
     <label class="form-label">Notes</label>
     <textarea name="notes" rows="3" class="form-control rounded-3">{{ old('notes', $s?->notes) }}</textarea>

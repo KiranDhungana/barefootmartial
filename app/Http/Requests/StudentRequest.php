@@ -32,6 +32,7 @@ class StudentRequest extends FormRequest
             'batch_timing' => 'nullable|string|max:128',
             'status' => ['nullable', Rule::in($statuses)],
             'discount_percent' => 'nullable|numeric|min:0|max:100',
+            'monthly_fee' => 'nullable|numeric|min:0',
             'scholarship_type' => ['nullable', Rule::in(config('academy.scholarship_types', []))],
             'scholarship_notes' => 'nullable|string|max:500',
             'fee_status' => 'nullable|string|max:64',

@@ -162,7 +162,7 @@
                 <div class="panel-body p-4 d-grid gap-2">
                     <a href="{{ route('erp.invoices.pdf', $invoice) }}" class="btn btn-outline-primary rounded-pill">Invoice PDF</a>
                     @if ($invoice->balanceDue() > 0)
-                        <a href="{{ route('erp.invoices.payment-slip', $invoice) }}" class="btn btn-outline-secondary rounded-pill">Payment slip PDF</a>
+                        <a href="{{ route('erp.invoices.payment-slip', $invoice) }}" class="btn btn-outline-secondary rounded-pill">Payment receipt PDF</a>
                         <form method="post" action="{{ route('erp.invoices.paid', $invoice) }}">
                             @csrf
                             <button type="submit" class="btn btn-success w-100 rounded-pill">Pay balance in full</button>

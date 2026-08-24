@@ -58,6 +58,7 @@ class InvoiceBillingService
                 'notes' => $notes,
                 'late_fee_amount' => $lateFee,
                 'is_scholarship_waiver' => $scholarshipWaiver,
+                'billing_period' => $options['billing_period'] ?? null,
             ]);
 
             $subtotal = 0;

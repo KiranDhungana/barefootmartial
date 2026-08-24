@@ -20,6 +20,7 @@
     $erpSchedules = request()->routeIs('erp.schedules.*');
     $erpEvents = request()->routeIs('erp.events.*');
     $erpOnlineReg = request()->routeIs('erp.online-registrations.*');
+    $erpMedia = request()->routeIs('erp.media.*');
     $erpCompliance = request()->routeIs('erp.compliance.*');
     $erpNotifications = request()->routeIs('erp.notifications.*');
     $erpInvReport = request()->routeIs('erp.inventory.report*');
@@ -76,6 +77,10 @@
             <span>Events</span>
         </a>
         @if ($isSuperAdmin)
+            <a class="admin-nav-link {{ $erpMedia ? 'active' : '' }}" href="{{ route('erp.media.index') }}">
+                <i class="fa-solid fa-images"></i>
+                <span>Gallery &amp; slider</span>
+            </a>
             <a class="admin-nav-link {{ $erpOnlineReg ? 'active' : '' }}" href="{{ route('erp.online-registrations.index') }}">
                 <i class="fa-solid fa-globe"></i>
                 <span>Online signups</span>

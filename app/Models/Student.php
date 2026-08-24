@@ -44,6 +44,7 @@ class Student extends Model
         'fee_status',
         'uniform_status',
         'discount_percent',
+        'monthly_fee',
         'scholarship_type',
         'scholarship_notes',
         'registered_at',
@@ -61,6 +62,7 @@ class Student extends Model
         'registered_at' => 'datetime',
         'imported' => 'boolean',
         'discount_percent' => 'decimal:2',
+        'monthly_fee' => 'decimal:2',
     ];
 
     public function hasFullScholarship(): bool
@@ -162,6 +164,11 @@ class Student extends Model
     public function beltPromotions(): HasMany
     {
         return $this->hasMany(BeltPromotion::class)->orderByDesc('promoted_at');
+    }
+
+    public function certificates(): HasMany
+    {
+        return $this->hasMany(StudentCertificate::class)->orderByDesc('issued_on')->orderByDesc('id');
     }
 
     public function eventRegistrations(): HasMany

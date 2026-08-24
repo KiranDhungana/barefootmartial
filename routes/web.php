@@ -25,6 +25,8 @@ use App\Http\Controllers\Erp\NotificationController;
 use App\Http\Controllers\Erp\OnlineRegistrationController;
 use App\Http\Controllers\Erp\ParentAccountController;
 use App\Http\Controllers\Erp\ScheduleController;
+use App\Http\Controllers\Erp\SiteMediaController;
+use App\Http\Controllers\Erp\StudentCertificateController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Parent\ParentPortalController;
 use App\Http\Controllers\PublicSiteController;
@@ -33,9 +35,7 @@ use App\Http\Controllers\Secondcontroller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [PublicSiteController::class, 'home'])->name('public.home');
 
 Route::get('/branches', [PublicSiteController::class, 'branches'])->name('public.branches');
 Route::get('/register-online', [PublicSiteController::class, 'registerForm'])->name('public.register');
@@ -43,6 +43,8 @@ Route::post('/register-online', [PublicSiteController::class, 'registerStore'])-
 Route::get('/events', [PublicSiteController::class, 'events'])->name('public.events');
 Route::get('/coaches', [PublicSiteController::class, 'coaches'])->name('public.coaches');
 Route::get('/notices', [PublicSiteController::class, 'notices'])->name('public.notices');
+Route::get('/gallary', [PublicSiteController::class, 'gallery'])->name('public.gallery');
+Route::get('/gallery', [PublicSiteController::class, 'gallery']);
 
 Route::get('/verify/{token}', [QrVerifyController::class, 'show'])->name('verify.student');
 
@@ -93,6 +95,9 @@ Route::middleware(['auth', 'erp'])->prefix('erp')->name('erp.')->group(function 
     Route::post('students/import/manual', [StudentImportController::class, 'storeManual'])->name('students.import.manual');
     Route::get('students/{student}/id-card.pdf', [StudentController::class, 'idCardPdf'])->name('students.id-card');
     Route::post('students/{student}/mark-official', [StudentController::class, 'markOfficial'])->name('students.mark-official');
+    Route::post('students/{student}/certificates', [StudentCertificateController::class, 'store'])->name('students.certificates.store');
+    Route::put('students/{student}/certificates/{certificate}', [StudentCertificateController::class, 'update'])->name('students.certificates.update');
+    Route::delete('students/{student}/certificates/{certificate}', [StudentCertificateController::class, 'destroy'])->name('students.certificates.destroy');
     Route::resource('students', StudentController::class);
 
     Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit.index');
@@ -170,6 +175,11 @@ Route::middleware(['auth', 'erp'])->prefix('erp')->name('erp.')->group(function 
     });
 
     Route::middleware('super_admin')->group(function () {
+        Route::get('media', [SiteMediaController::class, 'index'])->name('media.index');
+        Route::post('media', [SiteMediaController::class, 'store'])->name('media.store');
+        Route::put('media/{medium}', [SiteMediaController::class, 'update'])->name('media.update');
+        Route::delete('media/{medium}', [SiteMediaController::class, 'destroy'])->name('media.destroy');
+
         Route::get('online-registrations', [OnlineRegistrationController::class, 'index'])->name('online-registrations.index');
         Route::post('online-registrations/{onlineRegistration}/status', [OnlineRegistrationController::class, 'updateStatus'])->name('online-registrations.status');
         Route::post('online-registrations/{onlineRegistration}/convert', [OnlineRegistrationController::class, 'convert'])->name('online-registrations.convert');
@@ -188,9 +198,6 @@ Route::get('/notice-home', [Secondcontroller::class, 'notice_home'])->name('noti
 Route::get('/notice-home/{id}', [Secondcontroller::class, 'notice_main'])->name('notice_main');
 Route::get('/about-us', function () {
     return view('aboutus');
-});
-Route::get('/gallary', function () {
-    return view('galary');
 });
 Route::get('command', function () {
     $targetFolder = $_SERVER['DOCUMENT_ROOT'].'/storage/app/public';

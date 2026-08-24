@@ -73,7 +73,7 @@ class StudentRegistrationService
                 'registration_status', 'student_code', 'registered_at', 'registered_by',
             ]));
 
-            return $student;
+            return $student->fresh();
         });
     }
 

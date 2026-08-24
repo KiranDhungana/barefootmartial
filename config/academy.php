@@ -34,7 +34,7 @@ return [
 
     'fee_types' => [
         'admission' => ['label' => 'Admission fee', 'default_price' => 0],
-        'monthly' => ['label' => 'Monthly fee', 'default_price' => 0],
+        'monthly' => ['label' => 'Monthly fee', 'default_price' => (float) env('ACADEMY_DEFAULT_MONTHLY_FEE', 1500)],
         'uniform' => ['label' => 'Uniform', 'default_price' => 0],
         'belt' => ['label' => 'Belt', 'default_price' => 0],
         'gloves' => ['label' => 'Gloves', 'default_price' => 0],
@@ -44,6 +44,15 @@ return [
         'tournament' => ['label' => 'Tournament fee', 'default_price' => 0],
         'other' => ['label' => 'Other', 'default_price' => 0],
     ],
+
+    /** Default monthly fee when a student has no per-student amount set. */
+    'default_monthly_fee' => (float) env('ACADEMY_DEFAULT_MONTHLY_FEE', 1500),
+
+    /**
+     * When true, the month of admission is billed on join_date.
+     * When false, the first auto monthly invoice is due one month after join_date.
+     */
+    'monthly_fee_include_join_month' => (bool) env('ACADEMY_MONTHLY_FEE_INCLUDE_JOIN_MONTH', true),
 
     'payment_methods' => ['cash', 'bank', 'card', 'other'],
 
@@ -86,6 +95,19 @@ return [
     ],
 
     'logo_path' => env('ACADEMY_LOGO_PATH', 'images/logo.png'),
+
+    'org' => [
+        'legal_name' => 'Barefoot Martial Arts Academy',
+        'brand_line1' => 'BAREFOOT',
+        'brand_line2' => 'MARTIAL ARTS ACADEMY',
+        'tagline' => 'Discipline • Respect • Strength',
+        'address' => env('ACADEMY_ADDRESS', 'Kashipur, Butwal-11, Rupandehi, Nepal'),
+        'phone' => env('ACADEMY_PHONE', '9847088955'),
+        'email' => env('ACADEMY_EMAIL', 'info@barefootacademy.com'),
+        'website' => env('ACADEMY_WEBSITE', 'www.barefootacademy.com'),
+        'pan' => env('ACADEMY_PAN', '610123456'),
+        'vat' => env('ACADEMY_VAT', '302345678'),
+    ],
 
     'backup_path' => storage_path('app/backups'),
 

@@ -8,6 +8,8 @@ use App\Models\Payment;
 use App\Models\Student;
 use App\Services\InventoryService;
 use App\Services\InvoiceBillingService;
+use App\Services\MonthlyFeeService;
+use App\Services\QrCodeService;
 use App\Services\StudentRegistrationService;
 use App\Support\BranchScope;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -20,13 +22,16 @@ class InvoiceController extends Controller
     public function __construct(
         private StudentRegistrationService $registration,
         private InvoiceBillingService $billing,
-        private InventoryService $inventory
+        private InventoryService $inventory,
+        private QrCodeService $qr,
+        private MonthlyFeeService $monthlyFees
     ) {
         $this->middleware('finance');
     }
 
     public function index(Request $request): View
     {
+        $this->monthlyFees->generateDueInvoices();
         $this->billing->refreshOverdueStatuses(
             auth()->user()?->isBranchScoped() ? auth()->user()->branch_id : null
         );
@@ -156,20 +161,33 @@ class InvoiceController extends Controller
     public function receiptPdf(Invoice $invoice, Payment $payment): \Symfony\Component\HttpFoundation\Response
     {
         abort_unless((int) $payment->invoice_id === (int) $invoice->id, 404);
-        $invoice->load(['student.branch', 'lineItems']);
+        $invoice->load(['student.branch', 'lineItems', 'branch', 'payments']);
         BranchScope::assertStudentAccess($invoice->student);
 
-        return Pdf::loadView('erp.pdf.receipt', compact('invoice', 'payment'))
+        $qrSvg = $this->qr->svg($invoice->student->verifyUrl(), 90);
+
+        return Pdf::loadView('erp.pdf.receipt', [
+            'invoice' => $invoice,
+            'payment' => $payment,
+            'qrSvg' => $qrSvg,
+        ])
+            ->setPaper('a4')
             ->download($payment->receipt_number.'.pdf');
     }
 
     public function paymentSlipPdf(Invoice $invoice): \Symfony\Component\HttpFoundation\Response
     {
-        $invoice->load(['student.branch', 'lineItems', 'payments']);
+        $invoice->load(['student.branch', 'lineItems', 'payments', 'branch']);
         BranchScope::assertStudentAccess($invoice->student);
 
-        return Pdf::loadView('erp.pdf.payment-slip', ['invoice' => $invoice])
-            ->download('payment-slip-'.$invoice->invoice_number.'.pdf');
+        $qrSvg = $this->qr->svg($invoice->student->verifyUrl(), 90);
+
+        return Pdf::loadView('erp.pdf.payment-slip', [
+            'invoice' => $invoice,
+            'qrSvg' => $qrSvg,
+        ])
+            ->setPaper('a4')
+            ->download('payment-receipt-'.$invoice->invoice_number.'.pdf');
     }
 
     public function storePayment(Request $request, Invoice $invoice): RedirectResponse

@@ -3,45 +3,87 @@
 @section('title', 'Barefoot Martial Arts Academy')
 
 @section('content')
+    @php
+        $slides = $slides ?? collect();
+        $galleryPreview = $galleryPreview ?? collect();
+        $fallbackSlides = [
+            [
+                'url' => asset('images/ban3.jpg'),
+                'title' => 'Barefoot Martial Arts Academy',
+                'subtitle' => 'Build fitness, focus, and confidence — from fundamentals to advanced practice.',
+                'cta_label' => 'Register as student',
+                'cta_url' => route('public.register'),
+                'eyebrow' => 'Train with purpose',
+            ],
+            [
+                'url' => asset('images/ban3.jpg'),
+                'title' => 'A community that lifts each other',
+                'subtitle' => 'Taekwondo, boxing, Tang Soo Do and more — programmes for every age and level.',
+                'cta_label' => 'About us',
+                'cta_url' => url('about-us'),
+                'eyebrow' => null,
+            ],
+        ];
+    @endphp
     <div class="hero-wrap">
         <div id="carouselExampleIndicators" class="carousel slide hero-carousel" data-bs-ride="carousel">
             <div class="carousel-indicators">
-                <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active"
-                    aria-current="true" aria-label="Slide 1"></button>
-                <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1"
-                    aria-label="Slide 2"></button>
+                @forelse ($slides as $i => $slide)
+                    <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="{{ $i }}"
+                        class="{{ $i === 0 ? 'active' : '' }}" @if ($i === 0) aria-current="true" @endif
+                        aria-label="Slide {{ $i + 1 }}"></button>
+                @empty
+                    @foreach ($fallbackSlides as $i => $slide)
+                        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="{{ $i }}"
+                            class="{{ $i === 0 ? 'active' : '' }}" @if ($i === 0) aria-current="true" @endif
+                            aria-label="Slide {{ $i + 1 }}"></button>
+                    @endforeach
+                @endforelse
             </div>
             <div class="carousel-inner">
-                <div class="carousel-item active">
-                    <img src="{{ asset('images/ban3.jpg') }}" class="d-block w-100" alt="Barefoot Martial Arts training">
-                    <div class="carousel-caption text-start">
-                        <div class="caption-inner">
-                            <p class="text-uppercase small fw-semibold text-white-50 mb-2 mb-lg-3 letter-spacing-1">Train
-                                with purpose</p>
-                            <h2 class="hero-title text-white mb-3">Barefoot Martial Arts Academy</h2>
-                            <p class="hero-lead text-white mb-4">Build fitness, focus, and confidence — from fundamentals
-                                to advanced practice.</p>
-                            <div class="d-flex flex-wrap gap-2">
-                                <a href="{{ route('public.register') }}" class="btn btn-bf-primary btn-lg">Register as student</a>
-                                <a href="{{ route('contact') }}" class="btn btn-bf-outline btn-lg text-white border-white">Get in touch</a>
+                @forelse ($slides as $i => $slide)
+                    <div class="carousel-item {{ $i === 0 ? 'active' : '' }}">
+                        <img src="{{ $slide->url }}" class="d-block w-100"
+                            alt="{{ $slide->title ?: 'Barefoot Martial Arts' }}">
+                        <div class="carousel-caption text-start">
+                            <div class="caption-inner">
+                                @if ($slide->title || $slide->subtitle)
+                                    <h2 class="hero-title text-white mb-3">
+                                        {{ $slide->title ?: 'Barefoot Martial Arts Academy' }}</h2>
+                                    @if ($slide->subtitle)
+                                        <p class="hero-lead text-white mb-4">{{ $slide->subtitle }}</p>
+                                    @endif
+                                    @if ($slide->cta_label && $slide->cta_url)
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <a href="{{ $slide->cta_url }}"
+                                                class="btn btn-bf-primary btn-lg">{{ $slide->cta_label }}</a>
+                                        </div>
+                                    @endif
+                                @endif
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="carousel-item">
-                    <img src="{{ asset('images/ban3.jpg') }}" class="d-block w-100" alt="Academy facilities">
-                    <div class="carousel-caption text-start">
-                        <div class="caption-inner">
-                            <h2 class="hero-title text-white mb-3">A community that lifts each other</h2>
-                            <p class="hero-lead text-white mb-4">Taekwondo, boxing, Tang Soo Do and more — programmes for
-                                every age and level.</p>
-                            <div class="d-flex flex-wrap gap-2">
-                                <a href="{{ route('public.register') }}" class="btn btn-bf-primary btn-lg">Register as student</a>
-                                <a href="{{ url('about-us') }}" class="btn btn-bf-outline btn-lg text-white border-white">About us</a>
+                @empty
+                    @foreach ($fallbackSlides as $i => $slide)
+                        <div class="carousel-item {{ $i === 0 ? 'active' : '' }}">
+                            <img src="{{ $slide['url'] }}" class="d-block w-100" alt="{{ $slide['title'] }}">
+                            <div class="carousel-caption text-start">
+                                <div class="caption-inner">
+                                    @if ($slide['eyebrow'])
+                                        <p class="text-uppercase small fw-semibold text-white-50 mb-2 mb-lg-3 letter-spacing-1">
+                                            {{ $slide['eyebrow'] }}</p>
+                                    @endif
+                                    <h2 class="hero-title text-white mb-3">{{ $slide['title'] }}</h2>
+                                    <p class="hero-lead text-white mb-4">{{ $slide['subtitle'] }}</p>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <a href="{{ $slide['cta_url'] }}"
+                                            class="btn btn-bf-primary btn-lg">{{ $slide['cta_label'] }}</a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
+                    @endforeach
+                @endforelse
             </div>
             <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators"
                 data-bs-slide="prev">
@@ -149,11 +191,20 @@
         </div>
         <section class="gallery">
             <ul class="images">
-                @foreach (['tk1', 'tk2', 'tk3', 'tk4', 'tk5', 'tk6'] as $img)
-                    <li class="img"><img src="{{ asset('images/'.$img.'.jpg') }}" alt="Training gallery"></li>
-                @endforeach
+                @forelse ($galleryPreview as $item)
+                    <li class="img"><img src="{{ $item->url }}" alt="{{ $item->title ?: 'Training gallery' }}"></li>
+                @empty
+                    @foreach (['tk1', 'tk2', 'tk3', 'tk4', 'tk5', 'tk6'] as $img)
+                        <li class="img"><img src="{{ asset('images/'.$img.'.jpg') }}" alt="Training gallery"></li>
+                    @endforeach
+                @endforelse
             </ul>
         </section>
+        @if ($galleryPreview->isNotEmpty())
+            <div class="container text-center mt-4">
+                <a href="{{ route('public.gallery') }}" class="btn btn-bf-outline">View full gallery</a>
+            </div>
+        @endif
     </section>
 @endsection
 

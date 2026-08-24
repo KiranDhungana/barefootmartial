@@ -6,12 +6,42 @@ use App\Models\Branch;
 use App\Models\Event;
 use App\Models\file;
 use App\Models\OnlineRegistration;
+use App\Models\SiteMedia;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class PublicSiteController extends Controller
 {
+    public function home(): View
+    {
+        $slides = SiteMedia::query()
+            ->ofType(SiteMedia::TYPE_SLIDER)
+            ->active()
+            ->ordered()
+            ->get();
+
+        $galleryPreview = SiteMedia::query()
+            ->ofType(SiteMedia::TYPE_GALLERY)
+            ->active()
+            ->ordered()
+            ->limit(6)
+            ->get();
+
+        return view('welcome', compact('slides', 'galleryPreview'));
+    }
+
+    public function gallery(): View
+    {
+        $gallery = SiteMedia::query()
+            ->ofType(SiteMedia::TYPE_GALLERY)
+            ->active()
+            ->ordered()
+            ->get();
+
+        return view('galary', compact('gallery'));
+    }
+
     public function branches(): View
     {
         $branches = Branch::query()

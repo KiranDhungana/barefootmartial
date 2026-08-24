@@ -9,7 +9,10 @@ use App\Models\Attendance;
 use App\Models\Invoice;
 use App\Models\InvoiceLineItem;
 use App\Models\Student;
+use App\Models\StudentCertificate;
+use App\Services\CloudinaryService;
 use App\Services\QrCodeService;
+use App\Services\MonthlyFeeService;
 use App\Services\StudentRegistrationService;
 use App\Support\BranchScope;
 use App\Support\WhatsApp;
@@ -22,7 +25,9 @@ use Illuminate\View\View;
 class StudentController extends Controller
 {
     public function __construct(
-        private StudentRegistrationService $registration
+        private StudentRegistrationService $registration,
+        private MonthlyFeeService $monthlyFees,
+        private CloudinaryService $cloudinary
     ) {
     }
 
@@ -62,6 +67,13 @@ class StudentController extends Controller
 
     public function store(StudentRequest $request): RedirectResponse
     {
+        $request->validate([
+            'certificates' => 'nullable|array',
+            'certificates.*.file' => 'nullable|file|mimes:jpeg,jpg,png,webp,gif,pdf|max:10240',
+            'certificates.*.title' => 'nullable|string|max:255',
+            'certificates.*.issued_on' => 'nullable|date',
+        ]);
+
         $data = $request->validated();
         $student = new Student($data);
         $student->registration_status = Student::REG_PENDING;
@@ -70,14 +82,48 @@ class StudentController extends Controller
         }
         $student->save();
 
-        return redirect()->route('erp.students.show', $student)
-            ->with('success', 'Student saved. Complete registration and mark as official when ready.');
+        $this->storeRegistrationCertificates($request, $student);
+
+        return redirect()->route('erp.students.show', [$student, 'tab' => 'certificates'])
+            ->with('success', 'Student saved. Certificates attached where provided — complete registration and mark as official when ready.');
+    }
+
+    private function storeRegistrationCertificates(Request $request, Student $student): void
+    {
+        foreach ($request->input('certificates', []) as $index => $row) {
+            $file = $request->file("certificates.$index.file");
+            if (! $file) {
+                continue;
+            }
+
+            $uploaded = $this->cloudinary->uploadFile($file, 'certificates/'.$student->id);
+            $title = trim((string) ($row['title'] ?? ''));
+            if ($title === '') {
+                $title = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) ?: 'Certificate';
+            }
+
+            StudentCertificate::create([
+                'student_id' => $student->id,
+                'title' => $title,
+                'file_url' => $uploaded['url'],
+                'public_id' => $uploaded['public_id'],
+                'resource_type' => $uploaded['resource_type'],
+                'original_filename' => $file->getClientOriginalName(),
+                'issued_on' => $row['issued_on'] ?? null,
+                'uploaded_by' => auth()->id(),
+            ]);
+        }
     }
 
     public function show(Student $student): View
     {
         BranchScope::assertStudentAccess($student);
-        $student->load(['branch', 'registeredByUser', 'beltPromotions.promotedByUser']);
+        $student->load([
+            'branch',
+            'registeredByUser',
+            'beltPromotions.promotedByUser',
+            'certificates.uploader',
+        ]);
 
         $canViewFinance = auth()->user()?->canManageFinance() ?? false;
         $invoices = collect();
@@ -188,12 +234,13 @@ class StudentController extends Controller
 
         try {
             $this->registration->markOfficial($student, auth()->user());
+            $this->monthlyFees->generateDueInvoices();
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors());
         }
 
         return redirect()->route('erp.students.show', $student)
-            ->with('success', 'Student is now officially registered ('.$student->student_code.').');
+            ->with('success', 'Student is now officially registered ('.$student->fresh()->student_code.'). Monthly fees will auto-bill from the join date.');
     }
 
     public function destroy(Student $student): RedirectResponse

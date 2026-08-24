@@ -27,9 +27,15 @@
             </div>
             <section class="gallery">
                 <ul class="images">
-                    @foreach (range(1, 12) as $n)
-                        <li class="img"><img src="{{ asset('images/tk'.$n.'.jpg') }}" alt="Gallery photo {{ $n }}"></li>
-                    @endforeach
+                    @forelse ($gallery as $item)
+                        <li class="img">
+                            <img src="{{ $item->url }}" alt="{{ $item->title ?: 'Gallery photo' }}">
+                        </li>
+                    @empty
+                        @foreach (range(1, 12) as $n)
+                            <li class="img"><img src="{{ asset('images/tk'.$n.'.jpg') }}" alt="Gallery photo {{ $n }}"></li>
+                        @endforeach
+                    @endforelse
                 </ul>
             </section>
         </div>
