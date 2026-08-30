@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Student;
 use App\Services\MonthlyFeeService;
 use Illuminate\Console\Command;
 
@@ -13,12 +14,14 @@ class GenerateMonthlyFees extends Command
 
     public function handle(MonthlyFeeService $monthlyFees): int
     {
+        $backfill = (bool) config('academy.monthly_fee_backfill', false);
+
         if ($this->option('dry-run')) {
-            $students = \App\Models\Student::query()
-                ->where('registration_status', \App\Models\Student::REG_OFFICIAL)
+            $students = Student::query()
+                ->where('registration_status', Student::REG_OFFICIAL)
                 ->whereIn('status', [
-                    \App\Models\Student::STATUS_ACTIVE,
-                    \App\Models\Student::STATUS_PENDING_FEE,
+                    Student::STATUS_ACTIVE,
+                    Student::STATUS_PENDING_FEE,
                 ])
                 ->whereNotNull('join_date')
                 ->get();
@@ -35,7 +38,8 @@ class GenerateMonthlyFees extends Command
                     }
                 }
             }
-            $this->info("Dry run: {$wouldCreate} invoice(s) would be created.");
+            $mode = $backfill ? 'backfill' : 'current month only';
+            $this->info("Dry run ({$mode}): {$wouldCreate} invoice(s) would be created.");
 
             return self::SUCCESS;
         }

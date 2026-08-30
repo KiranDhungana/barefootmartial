@@ -15,11 +15,12 @@ class MonthlyFeeService
     }
 
     /**
-     * Create any missing monthly fee invoices (from join/admission date through today).
+     * Create missing monthly fee invoices for eligible students.
+     * By default only the current billing month (no historical backfill).
      *
      * @return array{created: int, skipped: int}
      */
-    public function generateDueInvoices(?Carbon $asOf = null): array
+    public function generateDueInvoices(?Carbon $asOf = null, ?Student $onlyStudent = null): array
     {
         $asOf = ($asOf ?? now())->copy()->startOfDay();
         $created = 0;
@@ -29,6 +30,7 @@ class MonthlyFeeService
             ->where('registration_status', Student::REG_OFFICIAL)
             ->whereIn('status', [Student::STATUS_ACTIVE, Student::STATUS_PENDING_FEE])
             ->whereNotNull('join_date')
+            ->when($onlyStudent, fn ($q) => $q->whereKey($onlyStudent->id))
             ->orderBy('id')
             ->get();
 
@@ -99,6 +101,48 @@ class MonthlyFeeService
      */
     public function duePeriods(Student $student, Carbon $asOf): array
     {
+        if ((bool) config('academy.monthly_fee_backfill', false)) {
+            return $this->allDuePeriods($student, $asOf);
+        }
+
+        $current = $this->currentDuePeriod($student, $asOf);
+
+        return $current ? [$current] : [];
+    }
+
+    /**
+     * The single billing period whose anniversary has passed most recently (<= today).
+     *
+     * @return array{key: string, label: string, due: Carbon}|null
+     */
+    public function currentDuePeriod(Student $student, Carbon $asOf): ?array
+    {
+        $join = $student->join_date?->copy()->startOfDay();
+        if (! $join) {
+            return null;
+        }
+
+        $includeJoinMonth = (bool) config('academy.monthly_fee_include_join_month', true);
+        $cursor = $includeJoinMonth ? $join->copy() : $this->addCalendarMonth($join, 1);
+        $current = null;
+
+        while ($cursor->lte($asOf)) {
+            $current = [
+                'key' => 'monthly:'.$cursor->format('Y-m'),
+                'label' => $cursor->format('F Y'),
+                'due' => $cursor->copy(),
+            ];
+            $cursor = $this->addCalendarMonth($cursor, 1);
+        }
+
+        return $current;
+    }
+
+    /**
+     * @return list<array{key: string, label: string, due: Carbon}>
+     */
+    private function allDuePeriods(Student $student, Carbon $asOf): array
+    {
         $join = $student->join_date?->copy()->startOfDay();
         if (! $join) {
             return [];
@@ -122,9 +166,19 @@ class MonthlyFeeService
 
     public function periodInvoiceExists(int $studentId, string $billingPeriod): bool
     {
-        return Invoice::query()
+        if (Invoice::query()
             ->where('student_id', $studentId)
             ->where('billing_period', $billingPeriod)
+            ->exists()) {
+            return true;
+        }
+
+        $yearMonth = str_replace('monthly:', '', $billingPeriod);
+
+        return Invoice::query()
+            ->where('student_id', $studentId)
+            ->whereHas('lineItems', fn ($q) => $q->where('fee_type', 'monthly'))
+            ->whereRaw("DATE_FORMAT(due_date, '%Y-%m') = ?", [$yearMonth])
             ->exists();
     }
 

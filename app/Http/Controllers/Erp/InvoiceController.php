@@ -8,7 +8,6 @@ use App\Models\Payment;
 use App\Models\Student;
 use App\Services\InventoryService;
 use App\Services\InvoiceBillingService;
-use App\Services\MonthlyFeeService;
 use App\Services\QrCodeService;
 use App\Services\StudentRegistrationService;
 use App\Support\BranchScope;
@@ -23,15 +22,13 @@ class InvoiceController extends Controller
         private StudentRegistrationService $registration,
         private InvoiceBillingService $billing,
         private InventoryService $inventory,
-        private QrCodeService $qr,
-        private MonthlyFeeService $monthlyFees
+        private QrCodeService $qr
     ) {
         $this->middleware('finance');
     }
 
     public function index(Request $request): View
     {
-        $this->monthlyFees->generateDueInvoices();
         $this->billing->refreshOverdueStatuses(
             auth()->user()?->isBranchScoped() ? auth()->user()->branch_id : null
         );

@@ -234,7 +234,7 @@ class StudentController extends Controller
 
         try {
             $this->registration->markOfficial($student, auth()->user());
-            $this->monthlyFees->generateDueInvoices();
+            $this->monthlyFees->generateDueInvoices(null, $student->fresh());
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors());
         }

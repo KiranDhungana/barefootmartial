@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Invoice;
 use App\Models\Student;
 use App\Services\InvoiceBillingService;
-use App\Services\MonthlyFeeService;
 use App\Support\BranchScope;
 use App\Support\WhatsApp;
 use Illuminate\Http\Request;
@@ -15,15 +14,13 @@ use Illuminate\View\View;
 class FeeController extends Controller
 {
     public function __construct(
-        private InvoiceBillingService $billing,
-        private MonthlyFeeService $monthlyFees
+        private InvoiceBillingService $billing
     ) {
         $this->middleware('finance');
     }
 
     public function index(Request $request): View
     {
-        $this->monthlyFees->generateDueInvoices();
         $this->billing->refreshOverdueStatuses(
             auth()->user()?->isBranchScoped() ? auth()->user()->branch_id : null
         );

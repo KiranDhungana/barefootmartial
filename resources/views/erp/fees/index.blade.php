@@ -5,10 +5,10 @@
 @section('page_subtitle', 'Monthly fees auto-generate from each student admission (join) date')
 
 @section('content')
-    <div class="alert alert-info border-0 rounded-4 mb-3">
-        Monthly fees are created automatically on the same day each month as the student’s <strong>join / admission date</strong>.
-        No manual update is needed — open this page or wait for the daily schedule.
-    </div>
+        <div class="alert alert-info border-0 rounded-4 mb-3">
+            Monthly fees are created automatically on the same day each month as the student’s <strong>join / admission date</strong>
+            (one invoice per month, via the daily scheduler — not when you open this page).
+        </div>
     <div class="d-flex flex-wrap justify-content-between gap-2 mb-3">
         <ul class="nav nav-pills gap-1">
             <li class="nav-item">

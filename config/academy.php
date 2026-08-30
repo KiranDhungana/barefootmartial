@@ -54,6 +54,12 @@ return [
      */
     'monthly_fee_include_join_month' => (bool) env('ACADEMY_MONTHLY_FEE_INCLUDE_JOIN_MONTH', true),
 
+    /**
+     * When false (default), only the current billing month is invoiced — no historical backfill.
+     * Set true only for one-time catch-up migrations.
+     */
+    'monthly_fee_backfill' => (bool) env('ACADEMY_MONTHLY_FEE_BACKFILL', false),
+
     'payment_methods' => ['cash', 'bank', 'card', 'other'],
 
     'scholarship_types' => [
