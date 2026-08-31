@@ -123,6 +123,7 @@ class StudentController extends Controller
             'registeredByUser',
             'beltPromotions.promotedByUser',
             'certificates.uploader',
+            'eventCertificates.event',
         ]);
 
         $canViewFinance = auth()->user()?->canManageFinance() ?? false;

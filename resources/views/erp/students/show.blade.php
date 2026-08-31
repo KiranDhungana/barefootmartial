@@ -289,6 +289,54 @@
             </div>
             <div class="col-lg-8">
                 <div class="panel-card mb-3">
+                    <div class="panel-heading">Event certificates</div>
+                    <div class="panel-body p-3">
+                        @forelse ($student->eventCertificates as $reg)
+                            <div class="border rounded-4 p-3 mb-3">
+                                <div class="row g-3 align-items-start">
+                                    <div class="col-md-3 text-center">
+                                        @if ($reg->certificateIsImage())
+                                            <a href="{{ $reg->certificate_url }}" target="_blank" rel="noopener">
+                                                <img src="{{ $reg->certificate_url }}" alt="Certificate"
+                                                    class="img-fluid rounded-3" style="max-height:100px;object-fit:cover">
+                                            </a>
+                                        @else
+                                            <a href="{{ $reg->certificate_url }}" target="_blank" rel="noopener"
+                                                class="btn btn-outline-secondary rounded-pill">
+                                                <i class="fa-solid fa-file-pdf me-1"></i> Open PDF
+                                            </a>
+                                        @endif
+                                    </div>
+                                    <div class="col-md-9">
+                                        <div class="fw-semibold">{{ $reg->certificate_title ?: $reg->event?->title }}</div>
+                                        <div class="small text-muted mb-1">
+                                            Event: {{ $reg->event?->title ?? '—' }}
+                                            @if ($reg->event?->event_date)
+                                                · {{ $reg->event->event_date->format('M j, Y') }}
+                                            @endif
+                                        </div>
+                                        @if ($reg->certificate_number)
+                                            <div class="small">Certificate no: {{ $reg->certificate_number }}</div>
+                                        @endif
+                                        @if ($reg->certificate_issued_on)
+                                            <div class="small text-muted">Issued {{ $reg->certificate_issued_on->format('M j, Y') }}</div>
+                                        @endif
+                                        <a href="{{ route('erp.events.show', $reg->event_id) }}"
+                                            class="btn btn-sm btn-outline-primary rounded-pill mt-2">Manage on event</a>
+                                        <a href="{{ $reg->certificate_url }}" target="_blank" rel="noopener"
+                                            class="btn btn-sm btn-outline-secondary rounded-pill mt-2">View</a>
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="text-muted text-center py-3 mb-0">
+                                No event certificates yet. Attach them from <strong>ERP → Events → open event → Registrations</strong>.
+                            </p>
+                        @endforelse
+                    </div>
+                </div>
+
+                <div class="panel-card mb-3">
                     <div class="panel-heading">Attached certificates</div>
                     <div class="panel-body p-3">
                         @forelse ($student->certificates as $cert)

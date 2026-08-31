@@ -176,6 +176,14 @@ class Student extends Model
         return $this->hasMany(EventRegistration::class);
     }
 
+    public function eventCertificates(): HasMany
+    {
+        return $this->hasMany(EventRegistration::class)
+            ->whereNotNull('certificate_url')
+            ->orderByDesc('certificate_issued_on')
+            ->orderByDesc('id');
+    }
+
     public function parents(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'parent_student', 'student_id', 'parent_user_id')

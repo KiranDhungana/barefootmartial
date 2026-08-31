@@ -168,6 +168,11 @@
                         </div>
                     </div>
                 </div>
+
+                @include('partials.student-portal-certificates', [
+                    'eventCertificates' => $eventCertificates,
+                    'studentCertificates' => $studentCertificates,
+                ])
             </div>
         @endif
     @endif

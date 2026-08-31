@@ -72,6 +72,29 @@
                 </div>
             </div>
 
+            @if (isset($student) && $student)
+                <form method="get" class="mb-3 d-flex gap-2 align-items-center flex-wrap">
+                    @if ($students->count() > 1)
+                        <label class="small text-muted mb-0">Profile:</label>
+                        <select name="student_id" class="form-select rounded-3" style="max-width:280px" onchange="this.form.submit()">
+                            @foreach ($students as $s)
+                                <option value="{{ $s->id }}" @selected($student->id === $s->id)>{{ $s->name }} ({{ $s->student_code }})</option>
+                            @endforeach
+                        </select>
+                    @else
+                        <p class="small text-muted mb-0">Linked student: <strong>{{ $student->name }}</strong> ({{ $student->student_code }})</p>
+                    @endif
+                </form>
+
+                <div class="row g-3 mt-1">
+                    @include('partials.student-portal-certificates', [
+                        'eventCertificates' => $eventCertificates,
+                        'studentCertificates' => $studentCertificates,
+                        'cardClass' => 'card-soft',
+                    ])
+                </div>
+            @endif
+
             @if (count($certs))
                 <div class="card-soft p-4 p-lg-5 mt-4">
                     <h2 class="h6 fw-bold text-uppercase text-muted letter-spacing mb-3">Certificates</h2>

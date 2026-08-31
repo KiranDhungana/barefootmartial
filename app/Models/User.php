@@ -101,6 +101,35 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
+    /**
+     * Students this login can view in the member/parent portal.
+     */
+    public function portalStudents(): \Illuminate\Support\Collection
+    {
+        if ($this->isParent()) {
+            return $this->children()->with('branch')->orderBy('name')->get();
+        }
+
+        if ($this->role === self::ROLE_PLAYER) {
+            $q = Student::query()->with('branch')->orderBy('name');
+
+            if ($this->phone) {
+                $q->where(function ($qq) {
+                    $qq->where('phone', $this->phone)
+                        ->orWhere('parent_contact', $this->phone);
+                });
+            } elseif ($this->email) {
+                $q->where('name', $this->name);
+            } else {
+                $q->where('name', $this->name);
+            }
+
+            return $q->get();
+        }
+
+        return collect();
+    }
+
     public function canManageFinance(): bool
     {
         return $this->isSuperAdmin()

@@ -41,7 +41,18 @@ class HomeController extends Controller
             return redirect()->route('parent.dashboard');
         }
 
-        return view('home');
+        $students = $user->portalStudents();
+        $studentId = request()->integer('student_id') ?: $students->first()?->id;
+        $student = $students->firstWhere('id', $studentId);
+        $eventCertificates = collect();
+        $studentCertificates = collect();
+
+        if ($student) {
+            $eventCertificates = $student->eventCertificates()->with('event')->get();
+            $studentCertificates = $student->certificates()->get();
+        }
+
+        return view('home', compact('students', 'student', 'eventCertificates', 'studentCertificates'));
     }
     public function adminhome()
     {

@@ -26,6 +26,8 @@ class ParentPortalController extends Controller
         $attendanceSummary = null;
         $invoices = collect();
         $payments = collect();
+        $eventCertificates = collect();
+        $studentCertificates = collect();
         $feeSummary = [
             'total_billed' => 0,
             'total_paid' => 0,
@@ -50,6 +52,9 @@ class ParentPortalController extends Controller
                 ->orderByDesc('paid_at')
                 ->get();
 
+            $eventCertificates = $student->eventCertificates()->with('event')->get();
+            $studentCertificates = $student->certificates()->get();
+
             $feeSummary = [
                 'total_billed' => round($invoices->sum(fn (Invoice $inv) => $inv->totalAmount()), 2),
                 'total_paid' => round($invoices->sum(fn (Invoice $inv) => (float) $inv->amount_paid), 2),
@@ -63,6 +68,8 @@ class ParentPortalController extends Controller
             'attendanceSummary',
             'invoices',
             'payments',
+            'eventCertificates',
+            'studentCertificates',
             'feeSummary',
             'notices'
         ));
