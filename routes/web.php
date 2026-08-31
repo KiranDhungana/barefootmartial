@@ -41,6 +41,8 @@ Route::get('/branches', [PublicSiteController::class, 'branches'])->name('public
 Route::get('/register-online', [PublicSiteController::class, 'registerForm'])->name('public.register');
 Route::post('/register-online', [PublicSiteController::class, 'registerStore'])->name('public.register.store');
 Route::get('/events', [PublicSiteController::class, 'events'])->name('public.events');
+Route::get('/events/{event}', [PublicSiteController::class, 'eventShow'])->name('public.events.show');
+Route::post('/events/{event}/register', [PublicSiteController::class, 'eventRegister'])->name('public.events.register');
 Route::get('/coaches', [PublicSiteController::class, 'coaches'])->name('public.coaches');
 Route::get('/notices', [PublicSiteController::class, 'notices'])->name('public.notices');
 Route::get('/gallary', [PublicSiteController::class, 'gallery'])->name('public.gallery');
@@ -131,6 +133,12 @@ Route::middleware(['auth', 'erp'])->prefix('erp')->name('erp.')->group(function 
     Route::put('events/{event}', [EventController::class, 'update'])->name('events.update');
     Route::delete('events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
     Route::post('events/{event}/register', [EventController::class, 'registerStudent'])->name('events.register');
+    Route::post('events/{event}/registrations/{registration}/certificate', [EventController::class, 'attachCertificate'])
+        ->name('events.registrations.certificate');
+    Route::delete('events/{event}/registrations/{registration}/certificate', [EventController::class, 'removeCertificate'])
+        ->name('events.registrations.certificate.destroy');
+    Route::post('events/{event}/registrations/{registration}/status', [EventController::class, 'updateRegistrationStatus'])
+        ->name('events.registrations.status');
 
     Route::get('students/{student}/parent-account', [ParentAccountController::class, 'create'])->name('parents.create');
     Route::post('students/{student}/parent-account', [ParentAccountController::class, 'store'])->name('parents.store');

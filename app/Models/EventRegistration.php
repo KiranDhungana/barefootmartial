@@ -10,14 +10,25 @@ class EventRegistration extends Model
     protected $fillable = [
         'event_id',
         'student_id',
+        'registrant_name',
+        'phone',
+        'email',
         'category',
         'fee_amount',
         'status',
+        'notes',
         'certificate_number',
+        'certificate_url',
+        'certificate_public_id',
+        'certificate_resource_type',
+        'certificate_title',
+        'certificate_issued_on',
+        'certificate_uploaded_by',
     ];
 
     protected $casts = [
         'fee_amount' => 'decimal:2',
+        'certificate_issued_on' => 'date',
     ];
 
     public function event(): BelongsTo
@@ -28,6 +39,37 @@ class EventRegistration extends Model
     public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);
+    }
+
+    public function certificateUploader(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'certificate_uploaded_by');
+    }
+
+    public function displayName(): string
+    {
+        return $this->student?->name
+            ?: ($this->registrant_name ?: 'Participant');
+    }
+
+    public function displayPhone(): ?string
+    {
+        return $this->phone ?: $this->student?->phone;
+    }
+
+    public function hasCertificate(): bool
+    {
+        return filled($this->certificate_url) || filled($this->certificate_number);
+    }
+
+    public function certificateIsImage(): bool
+    {
+        if (! $this->certificate_url) {
+            return false;
+        }
+
+        return ($this->certificate_resource_type === 'image')
+            || (bool) preg_match('/\.(jpe?g|png|gif|webp)$/i', $this->certificate_url);
     }
 
     public static function generateCertificateNumber(): string

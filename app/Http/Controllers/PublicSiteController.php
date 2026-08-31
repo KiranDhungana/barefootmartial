@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Branch;
 use App\Models\Event;
+use App\Models\EventRegistration;
 use App\Models\file;
 use App\Models\OnlineRegistration;
 use App\Models\SiteMedia;
+use App\Models\Student;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -89,6 +91,92 @@ class PublicSiteController extends Controller
             ->get();
 
         return view('public.events', compact('events'));
+    }
+
+    public function eventShow(Event $event): View
+    {
+        abort_unless($event->is_published, 404);
+        $event->load('branch');
+
+        return view('public.event-show', compact('event'));
+    }
+
+    public function eventRegister(Request $request, Event $event): RedirectResponse
+    {
+        abort_unless($event->is_published, 404);
+
+        if (! $event->isOpenForRegistration()) {
+            return back()->withInput()->withErrors([
+                'registration' => 'Registration for this event is closed.',
+            ]);
+        }
+
+        $data = $request->validate([
+            'registrant_name' => 'required|string|max:255',
+            'phone' => 'required|string|max:50',
+            'email' => 'nullable|email|max:255',
+            'student_code' => 'nullable|string|max:64',
+            'category' => 'nullable|string|max:128',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        $student = null;
+        if (! empty($data['student_code'])) {
+            $student = Student::query()
+                ->where('student_code', $data['student_code'])
+                ->first();
+            if (! $student) {
+                return back()->withInput()->withErrors([
+                    'student_code' => 'No student found with that membership ID.',
+                ]);
+            }
+        } else {
+            $student = Student::query()
+                ->where(function ($q) use ($data) {
+                    $q->where('phone', $data['phone'])
+                        ->orWhere('parent_contact', $data['phone']);
+                })
+                ->first();
+        }
+
+        if ($student) {
+            $exists = EventRegistration::query()
+                ->where('event_id', $event->id)
+                ->where('student_id', $student->id)
+                ->exists();
+            if ($exists) {
+                return back()->withInput()->withErrors([
+                    'registration' => 'This student is already registered for this event.',
+                ]);
+            }
+        } else {
+            $exists = EventRegistration::query()
+                ->where('event_id', $event->id)
+                ->whereNull('student_id')
+                ->where('phone', $data['phone'])
+                ->exists();
+            if ($exists) {
+                return back()->withInput()->withErrors([
+                    'phone' => 'This phone number is already registered for this event.',
+                ]);
+            }
+        }
+
+        EventRegistration::create([
+            'event_id' => $event->id,
+            'student_id' => $student?->id,
+            'registrant_name' => $data['registrant_name'],
+            'phone' => $data['phone'],
+            'email' => $data['email'] ?? null,
+            'category' => $data['category'] ?? null,
+            'notes' => $data['notes'] ?? null,
+            'fee_amount' => $event->fee_amount,
+            'status' => 'registered',
+        ]);
+
+        return redirect()
+            ->route('public.events.show', $event)
+            ->with('success', 'You are registered for '.$event->title.'. We will contact you with details.');
     }
 
     public function coaches(): View

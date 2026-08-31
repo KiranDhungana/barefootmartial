@@ -3,8 +3,9 @@
     $isNotice = request()->routeIs('notice_home') || request()->routeIs('notice_main');
     $isContact = request()->routeIs('contact');
     $isAbout = request()->is('about-us');
-    $isGallery = request()->is('gallary');
+    $isGallery = request()->is('gallary') || request()->routeIs('public.gallery');
     $isRegister = request()->routeIs('public.register');
+    $isEvents = request()->routeIs('public.events*');
 @endphp
 
 <nav class="navbar navbar-expand-lg navbar-dark site-navbar sticky-top">
@@ -21,6 +22,9 @@
             <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1 py-2 py-lg-0">
                 <li class="nav-item">
                     <a class="nav-link {{ $isHome ? 'active' : '' }}" href="{{ url('/') }}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ $isEvents ? 'active' : '' }}" href="{{ route('public.events') }}">Events</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {{ $isNotice ? 'active' : '' }}" href="{{ route('notice_home') }}">Notices</a>

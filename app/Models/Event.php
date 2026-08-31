@@ -34,4 +34,16 @@ class Event extends Model
     {
         return $this->hasMany(EventRegistration::class);
     }
+
+    public function isOpenForRegistration(): bool
+    {
+        if (! $this->is_published) {
+            return false;
+        }
+        if ($this->registration_deadline && $this->registration_deadline->copy()->endOfDay()->isPast()) {
+            return false;
+        }
+
+        return true;
+    }
 }
