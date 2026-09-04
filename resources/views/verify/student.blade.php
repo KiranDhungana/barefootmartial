@@ -11,8 +11,8 @@
 
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
                 <div class="card-body p-4 text-center">
-                    @if ($student->photo_path)
-                        <img src="{{ asset('storage/'.$student->photo_path) }}" class="rounded-circle mb-3"
+                    @if ($student->photoUrl())
+                        <img src="{{ $student->photoUrl() }}" class="rounded-circle mb-3"
                             style="width:120px;height:120px;object-fit:cover" alt="">
                     @endif
                     <h1 class="h4 mb-1">{{ $student->name }}</h1>

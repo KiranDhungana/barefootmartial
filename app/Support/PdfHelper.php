@@ -24,21 +24,34 @@ class PdfHelper
     }
 
     /**
-     * Base64 data URI for a JPEG/PNG under public/storage (ID cards).
+     * Base64 data URI for a JPEG/PNG under public/storage, or a remote (Cloudinary) URL.
      */
-    public static function publicStorageDataUri(string $relativePath, string $mime = 'image/jpeg'): ?string
+    public static function publicStorageDataUri(string $relativePathOrUrl, string $mime = 'image/jpeg'): ?string
     {
         if (! self::canEmbedImages()) {
             return null;
         }
 
-        $full = public_path('storage/'.$relativePath);
-        if (! is_file($full)) {
-            return null;
+        $contents = null;
+
+        if (str_starts_with($relativePathOrUrl, 'http://') || str_starts_with($relativePathOrUrl, 'https://')) {
+            try {
+                $contents = @file_get_contents($relativePathOrUrl);
+            } catch (\Throwable $e) {
+                return null;
+            }
+        } else {
+            $full = public_path('storage/'.$relativePathOrUrl);
+            if (! is_file($full)) {
+                $full = storage_path('app/public/'.$relativePathOrUrl);
+            }
+            if (! is_file($full)) {
+                return null;
+            }
+            $contents = file_get_contents($full);
         }
 
-        $contents = file_get_contents($full);
-        if ($contents === false) {
+        if ($contents === false || $contents === null || $contents === '') {
             return null;
         }
 

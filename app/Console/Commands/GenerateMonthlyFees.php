@@ -8,12 +8,22 @@ use Illuminate\Console\Command;
 
 class GenerateMonthlyFees extends Command
 {
-    protected $signature = 'academy:generate-monthly-fees {--dry-run : Show how many invoices would be created}';
+    protected $signature = 'academy:generate-monthly-fees
+                            {--dry-run : Show how many invoices would be created}
+                            {--force : Run even when ACADEMY_MONTHLY_FEE_AUTO_GENERATE is false}';
 
-    protected $description = 'Auto-create monthly fee invoices from each student admission (join) date';
+    protected $description = 'Create monthly fee invoices (disabled unless ACADEMY_MONTHLY_FEE_AUTO_GENERATE=true or --force)';
 
     public function handle(MonthlyFeeService $monthlyFees): int
     {
+        $enabled = (bool) config('academy.monthly_fee_auto_generate', false);
+        if (! $enabled && ! $this->option('force') && ! $this->option('dry-run')) {
+            $this->warn('Auto monthly fees are DISABLED (ACADEMY_MONTHLY_FEE_AUTO_GENERATE=false).');
+            $this->line('Create invoices manually in ERP, or run with --force for a one-time generate.');
+
+            return self::SUCCESS;
+        }
+
         $backfill = (bool) config('academy.monthly_fee_backfill', false);
 
         if ($this->option('dry-run')) {
@@ -39,7 +49,8 @@ class GenerateMonthlyFees extends Command
                 }
             }
             $mode = $backfill ? 'backfill' : 'current month only';
-            $this->info("Dry run ({$mode}): {$wouldCreate} invoice(s) would be created.");
+            $auto = $enabled ? 'enabled' : 'disabled';
+            $this->info("Dry run (auto={$auto}, {$mode}): {$wouldCreate} invoice(s) would be created.");
 
             return self::SUCCESS;
         }

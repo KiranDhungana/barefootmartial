@@ -15,7 +15,12 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('academy:generate-monthly-fees')->dailyAt('01:15');
+        // Auto monthly fees OFF by default (ACADEMY_MONTHLY_FEE_AUTO_GENERATE=false).
+        // Enable in .env only if you want one invoice per student per month via cron.
+        if (config('academy.monthly_fee_auto_generate', false)) {
+            $schedule->command('academy:generate-monthly-fees')->dailyAt('01:15');
+        }
+
         $schedule->command('academy:send-fee-reminders')->dailyAt('09:00');
         $schedule->command('academy:backup')->dailyAt('02:00');
         $schedule->command('academy:backup')->weeklyOn(0, '03:00');

@@ -67,8 +67,8 @@ class LoginController extends Controller
                 return redirect()->route('erp.dashboard');
             }
 
-            if ($user->canAccessParentPortal()) {
-                return redirect()->route('parent.dashboard');
+            if ($user->canAccessStudentPortal()) {
+                return redirect()->route('portal.dashboard');
             }
 
             return redirect()->route('home');

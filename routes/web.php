@@ -28,7 +28,7 @@ use App\Http\Controllers\Erp\ScheduleController;
 use App\Http\Controllers\Erp\SiteMediaController;
 use App\Http\Controllers\Erp\StudentCertificateController;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\Parent\ParentPortalController;
+use App\Http\Controllers\Portal\StudentPortalController;
 use App\Http\Controllers\PublicSiteController;
 use App\Http\Controllers\QrVerifyController;
 use App\Http\Controllers\Secondcontroller;
@@ -59,8 +59,22 @@ Route::middleware('guest')->group(function () {
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
+Route::middleware(['auth', 'student_portal'])->prefix('portal')->name('portal.')->group(function () {
+    Route::get('/', [StudentPortalController::class, 'dashboard'])->name('dashboard');
+    Route::get('/profile', [StudentPortalController::class, 'profile'])->name('profile');
+    Route::get('/attendance', [StudentPortalController::class, 'attendance'])->name('attendance');
+    Route::get('/fees', [StudentPortalController::class, 'fees'])->name('fees');
+    Route::get('/invoices/{invoice}', [StudentPortalController::class, 'invoiceShow'])->name('invoices.show');
+    Route::get('/invoices/{invoice}/pdf', [StudentPortalController::class, 'invoicePdf'])->name('invoices.pdf');
+    Route::get('/invoices/{invoice}/payments/{payment}/receipt.pdf', [StudentPortalController::class, 'receiptPdf'])->name('invoices.receipt');
+    Route::get('/certificates', [StudentPortalController::class, 'certificates'])->name('certificates');
+    Route::get('/students/{student}/belt-certificates/{promotion}.pdf', [StudentPortalController::class, 'beltCertificatePdf'])
+        ->name('belts.certificate');
+    Route::get('/notices', [StudentPortalController::class, 'notices'])->name('notices');
+});
+
 Route::middleware(['auth', 'parent'])->prefix('parent')->name('parent.')->group(function () {
-    Route::get('/', [ParentPortalController::class, 'dashboard'])->name('dashboard');
+    Route::get('/', fn () => redirect()->route('portal.dashboard'))->name('dashboard');
 });
 
 Route::get('/admin/home', [HomeController::class, 'adminhome'])->name('admin-home')->middleware('checkadmin');

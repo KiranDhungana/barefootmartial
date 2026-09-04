@@ -11,9 +11,10 @@ class PurgeAutoMonthlyInvoices extends Command
 {
     protected $signature = 'academy:purge-auto-monthly-invoices
                             {--dry-run : List counts only}
+                            {--force : Skip confirmation (for VPS scripts)}
                             {--include-paid : Also delete paid auto monthly invoices}';
 
-    protected $description = 'Remove erroneous auto-generated monthly fee invoices (e.g. historical backfill)';
+    protected $description = 'Remove auto-generated monthly fee invoices (fixes bad daily/backfill bills)';
 
     public function handle(): int
     {
@@ -42,7 +43,7 @@ class PurgeAutoMonthlyInvoices extends Command
             return self::SUCCESS;
         }
 
-        if (! $this->confirm("Delete {$count} auto monthly invoice(s)? This cannot be undone.")) {
+        if (! $this->option('force') && ! $this->confirm("Delete {$count} auto monthly invoice(s)? This cannot be undone.")) {
             return self::SUCCESS;
         }
 

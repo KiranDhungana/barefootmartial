@@ -150,9 +150,9 @@
 </div>
 <div class="mb-3">
     <label class="form-label">Photo</label>
-    @if ($s?->photo_path)
+    @if ($s?->photoUrl())
         <div class="mb-2">
-            <img src="{{ asset('storage/'.$s->photo_path) }}" alt="" class="rounded-3" style="max-height:120px">
+            <img src="{{ $s->photoUrl() }}" alt="" class="rounded-3" style="max-height:120px">
         </div>
     @endif
     <input type="file" name="photo" accept="image/*" class="form-control rounded-3">
@@ -164,17 +164,25 @@
             <p class="small text-muted mb-3">Attach certificates at registration (PDF or image). You can add or edit more later from the student profile.</p>
             @foreach (range(0, 2) as $i)
                 <div class="row g-2 align-items-end mb-2">
-                    <div class="col-md-5">
+                    <div class="col-md-4">
                         <label class="form-label small">File</label>
                         <input type="file" name="certificates[{{ $i }}][file]" accept=".pdf,image/*"
                             class="form-control form-control-sm rounded-3">
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label small">Title</label>
                         <input type="text" name="certificates[{{ $i }}][title]" class="form-control form-control-sm rounded-3"
                             placeholder="e.g. Birth certificate" value="{{ old('certificates.'.$i.'.title') }}">
                     </div>
                     <div class="col-md-3">
+                        <label class="form-label small">Type</label>
+                        <select name="certificates[{{ $i }}][certificate_type]" class="form-select form-select-sm rounded-3">
+                            @foreach (\App\Models\StudentCertificate::typeOptions() as $value => $label)
+                                <option value="{{ $value }}" @selected(old('certificates.'.$i.'.certificate_type', 'general') === $value)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-2">
                         <label class="form-label small">Issued on</label>
                         <input type="date" name="certificates[{{ $i }}][issued_on]"
                             class="form-control form-control-sm rounded-3"

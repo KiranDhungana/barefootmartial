@@ -90,6 +90,11 @@ class User extends Authenticatable
         return $this->isParent();
     }
 
+    public function canAccessStudentPortal(): bool
+    {
+        return $this->isParent() || $this->role === self::ROLE_PLAYER;
+    }
+
     public function canAccessErp(): bool
     {
         return $this->isSuperAdmin() || $this->isStaff();

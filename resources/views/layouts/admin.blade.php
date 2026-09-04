@@ -338,10 +338,10 @@
                 <img src="/images/logo.png" alt="Barefoot Martial Arts">
                 <div>
                     <span>Barefoot</span>
-                    <small>Admin</small>
+                    <small>@yield('sidebar_label', 'Admin')</small>
                 </div>
             </div>
-            @include('partials.admin-sidebar-nav')
+            @include(trim($__env->yieldContent('sidebar_partial')) ?: 'partials.admin-sidebar-nav')
         </aside>
 
         <div class="offcanvas offcanvas-start admin-offcanvas d-lg-none" tabindex="-1" id="adminSidebar"
@@ -351,7 +351,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
             <div class="offcanvas-body d-flex flex-column">
-                @include('partials.admin-sidebar-nav')
+                @include(trim($__env->yieldContent('sidebar_partial')) ?: 'partials.admin-sidebar-nav')
             </div>
         </div>
 

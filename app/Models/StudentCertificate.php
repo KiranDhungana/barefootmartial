@@ -7,9 +7,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class StudentCertificate extends Model
 {
+    public const TYPE_GENERAL = 'general';
+
+    public const TYPE_BELT = 'belt';
+
+    public const TYPE_EVENT = 'event';
+
     protected $fillable = [
         'student_id',
         'title',
+        'certificate_type',
         'file_url',
         'public_id',
         'resource_type',
@@ -22,6 +29,33 @@ class StudentCertificate extends Model
     protected $casts = [
         'issued_on' => 'date',
     ];
+
+    public static function typeOptions(): array
+    {
+        return [
+            self::TYPE_GENERAL => 'Normal certificate',
+            self::TYPE_BELT => 'Belt certificate',
+        ];
+    }
+
+    public static function attachTypeOptions(): array
+    {
+        return [
+            self::TYPE_GENERAL => 'Normal certificate',
+            self::TYPE_BELT => 'Belt certificate',
+            self::TYPE_EVENT => 'Event certificate',
+        ];
+    }
+
+    public function typeLabel(): string
+    {
+        return self::typeOptions()[$this->certificate_type] ?? 'Certificate';
+    }
+
+    public function isBelt(): bool
+    {
+        return $this->certificate_type === self::TYPE_BELT;
+    }
 
     public function student(): BelongsTo
     {

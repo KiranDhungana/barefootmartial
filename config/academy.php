@@ -60,6 +60,13 @@ return [
      */
     'monthly_fee_backfill' => (bool) env('ACADEMY_MONTHLY_FEE_BACKFILL', false),
 
+    /**
+     * When false (default), the daily scheduler will NOT create monthly fee invoices.
+     * Fees must be created manually in ERP → Invoices / Fees.
+     * Set true only if you want automatic monthly billing.
+     */
+    'monthly_fee_auto_generate' => (bool) env('ACADEMY_MONTHLY_FEE_AUTO_GENERATE', false),
+
     'payment_methods' => ['cash', 'bank', 'card', 'other'],
 
     'scholarship_types' => [

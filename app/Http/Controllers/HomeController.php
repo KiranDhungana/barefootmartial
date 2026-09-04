@@ -37,22 +37,11 @@ class HomeController extends Controller
         if ($user->canAccessErp()) {
             return redirect()->route('erp.dashboard');
         }
-        if ($user->canAccessParentPortal()) {
-            return redirect()->route('parent.dashboard');
+        if ($user->canAccessStudentPortal()) {
+            return redirect()->route('portal.dashboard');
         }
 
-        $students = $user->portalStudents();
-        $studentId = request()->integer('student_id') ?: $students->first()?->id;
-        $student = $students->firstWhere('id', $studentId);
-        $eventCertificates = collect();
-        $studentCertificates = collect();
-
-        if ($student) {
-            $eventCertificates = $student->eventCertificates()->with('event')->get();
-            $studentCertificates = $student->certificates()->get();
-        }
-
-        return view('home', compact('students', 'student', 'eventCertificates', 'studentCertificates'));
+        return view('home');
     }
     public function adminhome()
     {

@@ -4,8 +4,9 @@ namespace App\Http\Controllers\Erp;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StudentRequest;
-use App\Models\Branch;
 use App\Models\Attendance;
+use App\Models\Branch;
+use App\Models\Event;
 use App\Models\Invoice;
 use App\Models\InvoiceLineItem;
 use App\Models\Student;
@@ -67,10 +68,11 @@ class StudentController extends Controller
 
     public function store(StudentRequest $request): RedirectResponse
     {
-        $request->validate([
+            $request->validate([
             'certificates' => 'nullable|array',
             'certificates.*.file' => 'nullable|file|mimes:jpeg,jpg,png,webp,gif,pdf|max:10240',
             'certificates.*.title' => 'nullable|string|max:255',
+            'certificates.*.certificate_type' => 'nullable|in:general,belt',
             'certificates.*.issued_on' => 'nullable|date',
         ]);
 
@@ -78,7 +80,9 @@ class StudentController extends Controller
         $student = new Student($data);
         $student->registration_status = Student::REG_PENDING;
         if ($request->hasFile('photo')) {
-            $student->photo_path = $request->file('photo')->store('students', 'public');
+            $uploaded = $this->cloudinary->uploadImage($request->file('photo'), 'students');
+            $student->photo_path = $uploaded['url'];
+            $student->photo_public_id = $uploaded['public_id'];
         }
         $student->save();
 
@@ -105,6 +109,9 @@ class StudentController extends Controller
             StudentCertificate::create([
                 'student_id' => $student->id,
                 'title' => $title,
+                'certificate_type' => ($row['certificate_type'] ?? StudentCertificate::TYPE_GENERAL) === StudentCertificate::TYPE_BELT
+                    ? StudentCertificate::TYPE_BELT
+                    : StudentCertificate::TYPE_GENERAL,
                 'file_url' => $uploaded['url'],
                 'public_id' => $uploaded['public_id'],
                 'resource_type' => $uploaded['resource_type'],
@@ -166,6 +173,16 @@ class StudentController extends Controller
         $feeReminderMessage = $this->feeReminderMessage($student, $canViewFinance);
         $whatsappUrl = WhatsApp::waMeUrl($student->phone ?: $student->parent_contact, $feeReminderMessage);
 
+        $user = auth()->user();
+        $eventsForCertificates = Event::query()
+            ->when($user?->isBranchScoped(), fn ($q) => $q->where('branch_id', $user->branch_id))
+            ->when($student->branch_id, fn ($q) => $q->where(function ($qq) use ($student) {
+                $qq->whereNull('branch_id')->orWhere('branch_id', $student->branch_id);
+            }))
+            ->orderByDesc('event_date')
+            ->orderByDesc('id')
+            ->get(['id', 'title', 'event_date', 'branch_id']);
+
         return view('erp.students.show', compact(
             'student',
             'feeReminderMessage',
@@ -179,7 +196,8 @@ class StudentController extends Controller
             'uniformLines',
             'attendanceRecords',
             'monthPct',
-            'activeTab'
+            'activeTab',
+            'eventsForCertificates'
         ));
     }
 
@@ -216,10 +234,10 @@ class StudentController extends Controller
         $data = $request->validated();
         $student->fill($data);
         if ($request->hasFile('photo')) {
-            if ($student->photo_path) {
-                Storage::disk('public')->delete($student->photo_path);
-            }
-            $student->photo_path = $request->file('photo')->store('students', 'public');
+            $this->deleteStudentPhoto($student);
+            $uploaded = $this->cloudinary->uploadImage($request->file('photo'), 'students');
+            $student->photo_path = $uploaded['url'];
+            $student->photo_public_id = $uploaded['public_id'];
         }
         $student->save();
 
@@ -235,24 +253,50 @@ class StudentController extends Controller
 
         try {
             $this->registration->markOfficial($student, auth()->user());
-            $this->monthlyFees->generateDueInvoices(null, $student->fresh());
+            // Do not auto-create monthly fees unless explicitly enabled.
+            if (config('academy.monthly_fee_auto_generate', false)) {
+                $this->monthlyFees->generateDueInvoices(null, $student->fresh());
+            }
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors());
         }
 
+        $msg = 'Student is now officially registered ('.$student->fresh()->student_code.').';
+        if (config('academy.monthly_fee_auto_generate', false)) {
+            $msg .= ' Monthly fees will auto-bill from the join date.';
+        } else {
+            $msg .= ' Create monthly invoices manually in ERP → Invoices when due.';
+        }
+
         return redirect()->route('erp.students.show', $student)
-            ->with('success', 'Student is now officially registered ('.$student->fresh()->student_code.'). Monthly fees will auto-bill from the join date.');
+            ->with('success', $msg);
     }
 
     public function destroy(Student $student): RedirectResponse
     {
         BranchScope::assertStudentAccess($student);
-        if ($student->photo_path) {
-            Storage::disk('public')->delete($student->photo_path);
-        }
+        $this->deleteStudentPhoto($student);
         $student->delete();
 
         return redirect()->route('erp.students.index')->with('success', 'Student removed.');
+    }
+
+    private function deleteStudentPhoto(Student $student): void
+    {
+        if ($student->photo_public_id) {
+            try {
+                $this->cloudinary->delete($student->photo_public_id, 'image');
+            } catch (\Throwable $e) {
+                // ignore Cloudinary delete failures
+            }
+            $student->photo_public_id = null;
+        } elseif ($student->photo_path
+            && ! str_starts_with($student->photo_path, 'http://')
+            && ! str_starts_with($student->photo_path, 'https://')) {
+            Storage::disk('public')->delete($student->photo_path);
+        }
+
+        $student->photo_path = null;
     }
 
     public function idCardPdf(Student $student, QrCodeService $qr): \Symfony\Component\HttpFoundation\Response

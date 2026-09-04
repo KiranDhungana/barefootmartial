@@ -127,6 +127,9 @@ class TwoFactorController extends Controller
         if ($user->canAccessErp()) {
             return route('erp.dashboard');
         }
+        if ($user->canAccessStudentPortal()) {
+            return route('portal.dashboard');
+        }
 
         return route('home');
     }

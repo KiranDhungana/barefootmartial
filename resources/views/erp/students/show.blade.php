@@ -52,8 +52,8 @@
                 <div class="panel-heading">Profile</div>
                 <div class="panel-body p-4">
                     <div class="d-flex flex-wrap gap-3 align-items-start">
-                        @if ($student->photo_path)
-                            <img src="{{ asset('storage/'.$student->photo_path) }}" class="rounded-3"
+                        @if ($student->photoUrl())
+                            <img src="{{ $student->photoUrl() }}" class="rounded-3"
                                 style="width:120px;height:120px;object-fit:cover" alt="">
                         @endif
                         <div class="small">
@@ -260,12 +260,45 @@
                     <div class="panel-heading">Attach certificate</div>
                     <div class="panel-body p-4">
                         <form method="post" action="{{ route('erp.students.certificates.store', $student) }}"
-                            enctype="multipart/form-data">
+                            enctype="multipart/form-data" id="attach-certificate-form">
                             @csrf
                             <div class="mb-3">
                                 <label class="form-label">Title <span class="text-danger">*</span></label>
                                 <input type="text" name="title" class="form-control rounded-3" required
+                                    value="{{ old('title') }}"
                                     placeholder="e.g. School leaving certificate">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Type <span class="text-danger">*</span></label>
+                                <select name="certificate_type" id="certificate_type" class="form-select rounded-3" required>
+                                    @foreach (\App\Models\StudentCertificate::attachTypeOptions() as $value => $label)
+                                        <option value="{{ $value }}" @selected(old('certificate_type', 'general') === $value)>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mb-3 d-none" id="event-select-wrap">
+                                <label class="form-label">Event <span class="text-danger">*</span></label>
+                                <select name="event_id" id="event_id" class="form-select rounded-3">
+                                    <option value="">Select event…</option>
+                                    @foreach ($eventsForCertificates as $event)
+                                        <option value="{{ $event->id }}" @selected((string) old('event_id') === (string) $event->id)>
+                                            {{ $event->title }}
+                                            @if ($event->event_date)
+                                                ({{ $event->event_date->format('M j, Y') }})
+                                            @endif
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @if ($eventsForCertificates->isEmpty())
+                                    <div class="form-text text-warning">No events found. Create an event first under ERP → Events.</div>
+                                @else
+                                    <div class="form-text">If the student is not registered yet, they will be registered when you attach the certificate.</div>
+                                @endif
+                            </div>
+                            <div class="mb-3 d-none" id="cert-number-wrap">
+                                <label class="form-label">Certificate number</label>
+                                <input type="text" name="certificate_number" class="form-control rounded-3"
+                                    value="{{ old('certificate_number') }}" placeholder="Auto-generated if empty">
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">File <span class="text-danger">*</span></label>
@@ -274,16 +307,39 @@
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Issued on</label>
-                                <input type="date" name="issued_on" class="form-control rounded-3">
+                                <input type="date" name="issued_on" class="form-control rounded-3"
+                                    value="{{ old('issued_on') }}">
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Notes</label>
-                                <textarea name="notes" rows="2" class="form-control rounded-3"></textarea>
+                                <textarea name="notes" rows="2" class="form-control rounded-3">{{ old('notes') }}</textarea>
                             </div>
                             <button type="submit" class="btn btn-admin-primary text-white w-100">
                                 <i class="fa-solid fa-paperclip me-1"></i> Attach certificate
                             </button>
                         </form>
+                        @push('scripts')
+                            <script>
+                                (function () {
+                                    const typeSelect = document.getElementById('certificate_type');
+                                    const eventWrap = document.getElementById('event-select-wrap');
+                                    const eventSelect = document.getElementById('event_id');
+                                    const certNumberWrap = document.getElementById('cert-number-wrap');
+                                    if (!typeSelect || !eventWrap || !eventSelect) return;
+
+                                    function sync() {
+                                        const isEvent = typeSelect.value === 'event';
+                                        eventWrap.classList.toggle('d-none', !isEvent);
+                                        certNumberWrap?.classList.toggle('d-none', !isEvent);
+                                        eventSelect.required = isEvent;
+                                        if (!isEvent) eventSelect.value = '';
+                                    }
+
+                                    typeSelect.addEventListener('change', sync);
+                                    sync();
+                                })();
+                            </script>
+                        @endpush
                     </div>
                 </div>
             </div>
@@ -330,7 +386,8 @@
                             </div>
                         @empty
                             <p class="text-muted text-center py-3 mb-0">
-                                No event certificates yet. Attach them from <strong>ERP → Events → open event → Registrations</strong>.
+                                No event certificates yet. Attach one here by choosing type <strong>Event certificate</strong>,
+                                or from <strong>ERP → Events → Registrations</strong>.
                             </p>
                         @endforelse
                     </div>
@@ -368,12 +425,20 @@
                                                         value="{{ $cert->title }}" required>
                                                 </div>
                                                 <div class="col-md-6">
+                                                    <label class="form-label small">Type</label>
+                                                    <select name="certificate_type" class="form-select form-select-sm rounded-3" required>
+                                                        @foreach (\App\Models\StudentCertificate::typeOptions() as $value => $label)
+                                                            <option value="{{ $value }}" @selected(($cert->certificate_type ?: 'general') === $value)>{{ $label }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-6">
                                                     <label class="form-label small">Issued on</label>
                                                     <input type="date" name="issued_on"
                                                         class="form-control form-control-sm rounded-3"
                                                         value="{{ optional($cert->issued_on)->format('Y-m-d') }}">
                                                 </div>
-                                                <div class="col-12">
+                                                <div class="col-md-6">
                                                     <label class="form-label small">Notes</label>
                                                     <input type="text" name="notes" class="form-control form-control-sm rounded-3"
                                                         value="{{ $cert->notes }}">

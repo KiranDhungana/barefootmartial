@@ -2,12 +2,14 @@
 
 @section('title', 'Fee tracking')
 @section('page_title', 'Fee tracking')
-@section('page_subtitle', 'Monthly fees auto-generate from each student admission (join) date')
+@section('page_subtitle', 'Track due and overdue fees')
 
 @section('content')
         <div class="alert alert-info border-0 rounded-4 mb-3">
-            Monthly fees are created automatically on the same day each month as the student’s <strong>join / admission date</strong>
-            (one invoice per month, via the daily scheduler — not when you open this page).
+            Automatic monthly fee generation is <strong>off</strong> by default.
+            Create invoices manually in <strong>ERP → Invoices</strong>.
+            To enable auto monthly billing later, set <code>ACADEMY_MONTHLY_FEE_AUTO_GENERATE=true</code> in <code>.env</code>
+            (and keep <code>ACADEMY_MONTHLY_FEE_BACKFILL=false</code>).
         </div>
     <div class="d-flex flex-wrap justify-content-between gap-2 mb-3">
         <ul class="nav nav-pills gap-1">

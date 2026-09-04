@@ -52,6 +52,7 @@ class Student extends Model
         'imported',
         'join_date',
         'photo_path',
+        'photo_public_id',
         'qr_token',
         'notes',
     ];
@@ -193,6 +194,22 @@ class Student extends Model
     public function profileUrl(): string
     {
         return url('/erp/students/'.$this->id);
+    }
+
+    /**
+     * Absolute URL for the student photo (Cloudinary or local storage).
+     */
+    public function photoUrl(): ?string
+    {
+        if (! filled($this->photo_path)) {
+            return null;
+        }
+
+        if (str_starts_with($this->photo_path, 'http://') || str_starts_with($this->photo_path, 'https://')) {
+            return $this->photo_path;
+        }
+
+        return asset('storage/'.$this->photo_path);
     }
 
     public function verifyUrl(): string
