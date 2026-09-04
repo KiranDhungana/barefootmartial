@@ -73,7 +73,7 @@
                                             @if ($cert->issued_on)
                                                 <div class="small text-muted">Issued {{ $cert->issued_on->format('M j, Y') }}</div>
                                             @endif
-                                            <a href="{{ $cert->file_url }}" target="_blank" rel="noopener"
+                                            <a href="{{ $cert->downloadUrl() }}" target="_blank" rel="noopener"
                                                 class="btn btn-sm btn-outline-primary rounded-pill mt-2">
                                                 View certificate
                                             </a>
@@ -111,7 +111,7 @@
                                             @if ($reg->certificate_issued_on)
                                                 <div class="small text-muted">Issued {{ $reg->certificate_issued_on->format('M j, Y') }}</div>
                                             @endif
-                                            <a href="{{ $reg->certificate_url }}" target="_blank" rel="noopener"
+                                            <a href="{{ $reg->certificateDownloadUrl() }}" target="_blank" rel="noopener"
                                                 class="btn btn-sm btn-outline-primary rounded-pill mt-2">
                                                 View certificate
                                             </a>
@@ -145,7 +145,7 @@
                                             @if ($cert->issued_on)
                                                 <div class="small text-muted">Issued {{ $cert->issued_on->format('M j, Y') }}</div>
                                             @endif
-                                            <a href="{{ $cert->file_url }}" target="_blank" rel="noopener"
+                                            <a href="{{ $cert->downloadUrl() }}" target="_blank" rel="noopener"
                                                 class="btn btn-sm btn-outline-primary rounded-pill mt-2">
                                                 View certificate
                                             </a>

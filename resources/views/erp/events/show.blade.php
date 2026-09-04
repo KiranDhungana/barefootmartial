@@ -114,8 +114,8 @@
                                         @if ($r->certificate_issued_on)
                                             <div>Issued: {{ $r->certificate_issued_on->format('M j, Y') }}</div>
                                         @endif
-                                        <a href="{{ $r->certificate_url }}" target="_blank" rel="noopener"
-                                            class="btn btn-sm btn-outline-secondary rounded-pill mt-1">View</a>
+                                        <a href="{{ $r->certificateDownloadUrl() }}" target="_blank" rel="noopener"
+                                            class="btn btn-sm btn-outline-secondary rounded-pill mt-1">Download PDF</a>
                                         <form method="post"
                                             action="{{ route('erp.events.registrations.certificate.destroy', [$event, $r]) }}"
                                             class="d-inline"

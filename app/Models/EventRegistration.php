@@ -68,8 +68,22 @@ class EventRegistration extends Model
             return false;
         }
 
+        if ($this->certificate_resource_type === 'raw') {
+            return false;
+        }
+
         return ($this->certificate_resource_type === 'image')
             || (bool) preg_match('/\.(jpe?g|png|gif|webp)$/i', $this->certificate_url);
+    }
+
+    public function certificateDownloadUrl(): ?string
+    {
+        $name = ($this->certificate_title ?: 'event-certificate').'.pdf';
+        if ($this->certificateIsImage()) {
+            $name = ($this->certificate_title ?: 'event-certificate').'.jpg';
+        }
+
+        return \App\Services\CloudinaryService::downloadableUrl($this->certificate_url, $name);
     }
 
     public static function generateCertificateNumber(): string

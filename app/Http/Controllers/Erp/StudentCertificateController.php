@@ -48,7 +48,8 @@ class StudentCertificateController extends Controller
             'file_url' => $uploaded['url'],
             'public_id' => $uploaded['public_id'],
             'resource_type' => $uploaded['resource_type'],
-            'original_filename' => $request->file('file')->getClientOriginalName(),
+            'original_filename' => $uploaded['original_filename']
+                ?? $request->file('file')->getClientOriginalName(),
             'issued_on' => $data['issued_on'] ?? null,
             'notes' => $data['notes'] ?? null,
             'uploaded_by' => auth()->id(),
@@ -91,7 +92,8 @@ class StudentCertificateController extends Controller
             $payload['file_url'] = $uploaded['url'];
             $payload['public_id'] = $uploaded['public_id'];
             $payload['resource_type'] = $uploaded['resource_type'];
-            $payload['original_filename'] = $request->file('file')->getClientOriginalName();
+            $payload['original_filename'] = $uploaded['original_filename']
+                ?? $request->file('file')->getClientOriginalName();
         }
 
         $certificate->update($payload);

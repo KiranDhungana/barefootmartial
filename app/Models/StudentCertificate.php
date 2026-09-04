@@ -69,7 +69,33 @@ class StudentCertificate extends Model
 
     public function isImage(): bool
     {
+        if ($this->resource_type === 'raw') {
+            return false;
+        }
+
         return in_array($this->resource_type, ['image', ''], true)
-            || preg_match('/\.(jpe?g|png|gif|webp)$/i', $this->file_url);
+            || preg_match('/\.(jpe?g|png|gif|webp)$/i', $this->file_url ?? '');
+    }
+
+    public function isPdf(): bool
+    {
+        if ($this->resource_type === 'raw') {
+            return true;
+        }
+
+        $name = $this->original_filename ?: $this->file_url;
+
+        return (bool) preg_match('/\.pdf($|\?)/i', (string) $name);
+    }
+
+    /**
+     * URL that downloads with a proper .pdf / file name.
+     */
+    public function downloadUrl(): ?string
+    {
+        $name = $this->original_filename
+            ?: (($this->isPdf() ? ($this->title ?: 'certificate').'.pdf' : 'certificate'));
+
+        return \App\Services\CloudinaryService::downloadableUrl($this->file_url, $name);
     }
 }

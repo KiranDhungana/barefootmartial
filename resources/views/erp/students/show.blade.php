@@ -357,7 +357,7 @@
                                                     class="img-fluid rounded-3" style="max-height:100px;object-fit:cover">
                                             </a>
                                         @else
-                                            <a href="{{ $reg->certificate_url }}" target="_blank" rel="noopener"
+                                            <a href="{{ $reg->certificateDownloadUrl() }}" target="_blank" rel="noopener"
                                                 class="btn btn-outline-secondary rounded-pill">
                                                 <i class="fa-solid fa-file-pdf me-1"></i> Open PDF
                                             </a>
@@ -379,7 +379,7 @@
                                         @endif
                                         <a href="{{ route('erp.events.show', $reg->event_id) }}"
                                             class="btn btn-sm btn-outline-primary rounded-pill mt-2">Manage on event</a>
-                                        <a href="{{ $reg->certificate_url }}" target="_blank" rel="noopener"
+                                        <a href="{{ $reg->certificateDownloadUrl() }}" target="_blank" rel="noopener"
                                             class="btn btn-sm btn-outline-secondary rounded-pill mt-2">View</a>
                                     </div>
                                 </div>
@@ -406,7 +406,7 @@
                                                     class="img-fluid rounded-3" style="max-height:100px;object-fit:cover">
                                             </a>
                                         @else
-                                            <a href="{{ $cert->file_url }}" target="_blank" rel="noopener"
+                                            <a href="{{ $cert->downloadUrl() }}" target="_blank" rel="noopener"
                                                 class="btn btn-outline-secondary rounded-pill">
                                                 <i class="fa-solid fa-file-pdf me-1"></i> Open PDF
                                             </a>
@@ -451,7 +451,7 @@
                                                 <div class="col-md-4 d-flex align-items-end gap-2">
                                                     <button type="submit"
                                                         class="btn btn-sm btn-outline-primary rounded-pill">Save</button>
-                                                    <a href="{{ $cert->file_url }}" target="_blank" rel="noopener"
+                                                    <a href="{{ $cert->downloadUrl() }}" target="_blank" rel="noopener"
                                                         class="btn btn-sm btn-outline-secondary rounded-pill">View</a>
                                                 </div>
                                             </div>

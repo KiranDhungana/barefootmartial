@@ -115,7 +115,7 @@ class StudentController extends Controller
                 'file_url' => $uploaded['url'],
                 'public_id' => $uploaded['public_id'],
                 'resource_type' => $uploaded['resource_type'],
-                'original_filename' => $file->getClientOriginalName(),
+                'original_filename' => $uploaded['original_filename'] ?? $file->getClientOriginalName(),
                 'issued_on' => $row['issued_on'] ?? null,
                 'uploaded_by' => auth()->id(),
             ]);
