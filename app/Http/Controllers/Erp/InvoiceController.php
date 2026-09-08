@@ -148,7 +148,7 @@ class InvoiceController extends Controller
 
     public function pdf(Invoice $invoice): \Symfony\Component\HttpFoundation\Response
     {
-        $invoice->load(['student.branch', 'lineItems']);
+        $invoice->load(['student.branch', 'lineItems', 'payments']);
         BranchScope::assertStudentAccess($invoice->student);
 
         return Pdf::loadView('erp.pdf.invoice', ['invoice' => $invoice])

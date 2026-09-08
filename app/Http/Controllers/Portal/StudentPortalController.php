@@ -132,7 +132,7 @@ class StudentPortalController extends Controller
     public function invoicePdf(Invoice $invoice): Response
     {
         $this->assertInvoiceAccess($invoice);
-        $invoice->load(['student.branch', 'lineItems']);
+        $invoice->load(['student.branch', 'lineItems', 'payments']);
 
         return Pdf::loadView('erp.pdf.invoice', ['invoice' => $invoice])
             ->download($invoice->invoice_number.'.pdf');
