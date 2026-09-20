@@ -18,7 +18,13 @@ class PdfHelper
             return null;
         }
 
-        $path = public_path(config('academy.logo_path', 'images/logo.png'));
+        $relative = \App\Support\AcademyOrg::getString('logo_path')
+            ?: config('academy.logo_path', 'images/logo.png');
+        $path = public_path(ltrim((string) $relative, '/\\'));
+
+        if (! is_file($path)) {
+            $path = public_path(config('academy.logo_path', 'images/logo.png'));
+        }
 
         return is_file($path) ? $path : null;
     }

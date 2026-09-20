@@ -31,7 +31,10 @@
 
 <body>
     <h1>Academy report — {{ $periodLabel }}</h1>
-    <p>Barefoot Martial Arts</p>
+    <p>{{ \App\Support\AcademyOrg::getString('legal_name', 'Barefoot Martial Arts') }}</p>
+    @if ($addr = \App\Support\AcademyOrg::getString('address'))
+        <p style="font-size:11px;color:#555;">{{ $addr }}</p>
+    @endif
     <table>
         <tr>
             <th>Metric</th>

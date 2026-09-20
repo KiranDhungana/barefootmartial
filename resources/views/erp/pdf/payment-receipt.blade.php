@@ -1,7 +1,7 @@
 @php
     use App\Support\PdfHelper;
 
-    $org = config('academy.org');
+    $org = \App\Support\AcademyOrg::get();
     $student = $invoice->student;
     $logoPath = PdfHelper::logoPath();
     $qrPath = PdfHelper::publicImagePath($org['qr_path'] ?? 'images/qr_final.jpeg');

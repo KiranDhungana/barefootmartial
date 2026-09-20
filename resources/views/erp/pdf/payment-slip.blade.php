@@ -11,5 +11,5 @@
     'balanceDue' => $invoice->balanceDue(),
     'statusLabel' => $invoice->statusLabel(),
     'statusKey' => $invoice->status,
-    'receivedBy' => config('academy.org.legal_name', 'Barefoot Martial Arts Academy'),
+    'receivedBy' => \App\Support\AcademyOrg::getString('legal_name', 'Barefoot Martial Arts Academy'),
 ])

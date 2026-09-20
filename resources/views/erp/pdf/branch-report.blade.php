@@ -13,7 +13,10 @@
 
 <body>
     <h1>Branch report — {{ $branch->name ?? 'Branch' }}</h1>
-    <p>Barefoot Martial Arts</p>
+    <p>{{ \App\Support\AcademyOrg::getString('legal_name', 'Barefoot Martial Arts') }}</p>
+    @if ($addr = \App\Support\AcademyOrg::getString('address'))
+        <p style="font-size:11px;color:#555;">{{ $addr }}</p>
+    @endif
 
     <h2>Daily ({{ $daily['date'] }})</h2>
     <table>

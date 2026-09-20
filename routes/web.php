@@ -6,6 +6,7 @@ use App\Http\Controllers\Erp\AuditLogController;
 use App\Http\Controllers\Erp\DashboardController;
 use App\Http\Controllers\Erp\ErpUserController;
 use App\Http\Controllers\Erp\FeeController;
+use App\Http\Controllers\Erp\InstituteProfileController;
 use App\Http\Controllers\Erp\InventoryController;
 use App\Http\Controllers\Erp\InvoiceController;
 use App\Http\Controllers\Erp\ReportController;
@@ -98,6 +99,9 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'erp'])->prefix('erp')->name('erp.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('hq', [HqDashboardController::class, 'index'])->name('hq.dashboard');
+
+    Route::get('institute', [InstituteProfileController::class, 'edit'])->name('institute.edit');
+    Route::put('institute', [InstituteProfileController::class, 'update'])->name('institute.update');
 
     Route::get('belts', [BeltController::class, 'index'])->name('belts.index');
     Route::get('belts/students/{student}', [BeltController::class, 'promoteForm'])->name('belts.promote');

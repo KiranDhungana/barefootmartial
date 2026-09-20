@@ -24,6 +24,7 @@
     $erpCompliance = request()->routeIs('erp.compliance.*');
     $erpNotifications = request()->routeIs('erp.notifications.*');
     $erpInvReport = request()->routeIs('erp.inventory.report*');
+    $erpInstitute = request()->routeIs('erp.institute.*');
     $addPlayerActive = request()->routeIs('register_user');
     $addNoticeActive = request()->routeIs('add_notice');
     $delNoticeActive = request()->routeIs('del_notice');
@@ -32,6 +33,7 @@
     $canFinance = $user && $user->canManageFinance();
     $canImport = $user && $user->canImportStudents();
     $canAudit = $user && $user->canViewAuditLogs();
+    $canInstitute = $user && ($user->isSuperAdmin() || $user->role === 'branch_admin');
 @endphp
 <nav class="admin-sidebar-nav flex-column gap-1" aria-label="Admin navigation">
     @if ($user && $user->canAccessErp())
@@ -40,6 +42,12 @@
             <a class="admin-nav-link {{ $erpHq ? 'active' : '' }}" href="{{ route('erp.hq.dashboard') }}">
                 <i class="fa-solid fa-building"></i>
                 <span>Head office</span>
+            </a>
+        @endif
+        @if ($canInstitute)
+            <a class="admin-nav-link {{ $erpInstitute ? 'active' : '' }}" href="{{ route('erp.institute.edit') }}">
+                <i class="fa-solid fa-location-dot"></i>
+                <span>Institute profile</span>
             </a>
         @endif
         <a class="admin-nav-link {{ $erpDash && ! $erpHq ? 'active' : '' }}" href="{{ route('erp.dashboard') }}">
