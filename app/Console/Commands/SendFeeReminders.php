@@ -9,13 +9,15 @@ class SendFeeReminders extends Command
 {
     protected $signature = 'academy:send-fee-reminders {--dry-run : List only, do not send}';
 
-    protected $description = 'Email fee reminders for open invoices (when student/parent email exists)';
+    protected $description = 'Email fee reminders with consolidated outstanding balance (one per student)';
 
     public function handle(NotificationService $notifications): int
     {
         $count = 0;
-        foreach ($notifications->overdueInvoicesForReminders() as $invoice) {
-            $student = $invoice->student;
+
+        foreach ($notifications->studentsWithOpenBalances() as $row) {
+            $student = $row['student'];
+            $summary = $row['summary'];
             $email = $student->parents()->value('email') ?: null;
             if (! $email && filter_var($student->parent_contact, FILTER_VALIDATE_EMAIL)) {
                 $email = $student->parent_contact;
@@ -24,11 +26,12 @@ class SendFeeReminders extends Command
                 continue;
             }
 
-            $subject = 'Fee reminder — '.$invoice->invoice_number;
-            $body = $notifications->feeReminderMessage($invoice);
+            $subject = 'Fee reminder — total outstanding Rs. '.number_format($summary['total_outstanding'], 2);
+            $body = $row['message'];
 
             if ($this->option('dry-run')) {
-                $this->line($email.' — '.$student->name.' — '.$invoice->balanceDue());
+                $this->line($email.' — '.$student->name.' — Rs. '.number_format($summary['total_outstanding'], 2)
+                    .' ('.$summary['open_count'].' invoice(s))');
 
                 continue;
             }

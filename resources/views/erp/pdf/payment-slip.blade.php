@@ -3,6 +3,7 @@
     'invoice' => $invoice,
     'payment' => null,
     'qrSvg' => $qrSvg ?? null,
+    'feeSummary' => $feeSummary ?? null,
     'receiptNumber' => $invoice->invoice_number,
     'documentDate' => now(),
     'paymentMethod' => optional($invoice->payments->sortByDesc('id')->first())->payment_method,

@@ -21,14 +21,21 @@
             </form>
         </div>
         <div class="col-lg-7">
-            <div class="panel-card mb-3"><div class="panel-heading">Overdue reminders</div><div class="panel-body">
-                @foreach ($overdue->take(10) as $inv)
-                    <form method="post" action="{{ route('erp.notifications.invoice', $inv) }}" class="d-flex justify-content-between align-items-center border-bottom py-2 small">
+            <div class="panel-card mb-3"><div class="panel-heading">Open balance reminders (consolidated)</div><div class="panel-body">
+                @forelse ($overdue->take(15) as $row)
+                    <form method="post" action="{{ route('erp.notifications.invoice', $row['summary']['open_invoices']->first()) }}"
+                        class="d-flex justify-content-between align-items-center border-bottom py-2 small gap-2">
                         @csrf
-                        <span>{{ $inv->student->name }} — {{ $inv->invoice_number }}</span>
+                        <span>
+                            <strong>{{ $row['student']->name }}</strong>
+                            — Rs. {{ number_format($row['summary']['total_outstanding'], 2) }}
+                            <span class="text-muted">({{ $row['summary']['open_count'] }} invoice(s))</span>
+                        </span>
                         <button class="btn btn-sm btn-outline-primary rounded-pill">Send reminder</button>
                     </form>
-                @endforeach
+                @empty
+                    <p class="text-muted small mb-0 p-3">No open balances.</p>
+                @endforelse
             </div></div>
             <div class="panel-card"><div class="panel-heading">Recent log</div><div class="panel-body table-responsive" style="max-height:320px">
                 <table class="table admin-table mb-0 small">

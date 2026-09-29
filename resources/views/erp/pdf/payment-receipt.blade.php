@@ -14,6 +14,15 @@
 
     $amountWords = PdfHelper::amountInWords($paidAmount);
 
+    if (! isset($feeSummary) || ! is_array($feeSummary)) {
+        $feeSummary = app(\App\Services\StudentFeeSummaryService::class)->summary($student);
+    }
+
+    $accountOutstanding = (float) ($feeSummary['total_outstanding'] ?? 0);
+    $accountBilled = (float) ($feeSummary['total_billed'] ?? 0);
+    $accountPaid = (float) ($feeSummary['total_paid'] ?? 0);
+    $invoiceBalance = (float) ($balanceDue ?? $invoice->balanceDue());
+
     $methods = [
         'cash' => 'Cash',
         'esewa' => 'eSewa',
@@ -21,38 +30,30 @@
         'other' => 'Other',
     ];
 
-    // Particulars: prefer this payment's share of invoice lines, else invoice lines, else single line.
+    // Particulars: this invoice's line items + payment received (not other invoices' balances).
     $rows = collect();
-    if ($payment && $invoice->lineItems->isNotEmpty()) {
+    if ($invoice->lineItems->isNotEmpty()) {
         foreach ($invoice->lineItems as $line) {
             $rows->push((object) [
                 'description' => $line->description.($line->size ? ' ('.$line->size.')' : ''),
                 'amount' => (float) $line->line_total,
             ]);
         }
-        // If this is a partial payment, show a clear payment line as well when totals differ.
-        $invoiceTotal = (float) $invoice->totalAmount();
-        if ($invoiceTotal > 0 && abs($paidAmount - $invoiceTotal) > 0.01) {
-            $rows = collect([(object) [
-                'description' => 'Payment received against invoice '.$invoice->invoice_number,
-                'amount' => $paidAmount,
-            ]]);
-        }
-    } elseif ($invoice->lineItems->isNotEmpty() && ! $payment) {
-        foreach ($invoice->lineItems as $line) {
-            $rows->push((object) [
-                'description' => $line->description.($line->size ? ' ('.$line->size.')' : ''),
-                'amount' => (float) $line->line_total,
-            ]);
-        }
-    } else {
+    }
+
+    if ($payment) {
+        $rows->push((object) [
+            'description' => 'Payment received (Receipt '.($payment->receipt_number ?? $receiptNo).')',
+            'amount' => $paidAmount,
+        ]);
+    } elseif ($rows->isEmpty()) {
         $rows->push((object) [
             'description' => 'Payment received'.($invoice->invoice_number ? ' — '.$invoice->invoice_number : ''),
             'amount' => $paidAmount,
         ]);
     }
 
-    $padRows = max(0, 5 - $rows->count());
+    $padRows = max(0, 3 - $rows->count());
     $isChecked = function (string $key) use ($paymentMethod): bool {
         if (! $paymentMethod) {
             return false;
@@ -306,15 +307,50 @@
 
     <table class="w-100 total-table" style="margin-top:0;">
         <tr>
-            <td class="label">TOTAL AMOUNT</td>
+            <td class="label">AMOUNT RECEIVED</td>
             <td class="text-right">Rs. {{ number_format($paidAmount, 2) }}</td>
+        </tr>
+        <tr>
+            <td class="label" style="background:#0b3a66;">THIS INVOICE REMAINING</td>
+            <td class="text-right">Rs. {{ number_format($invoiceBalance, 2) }}</td>
+        </tr>
+        <tr>
+            <td class="label" style="background:#0b3a66;">ACCOUNT TOTAL BILLED</td>
+            <td class="text-right">Rs. {{ number_format($accountBilled, 2) }}</td>
+        </tr>
+        <tr>
+            <td class="label" style="background:#0b3a66;">ACCOUNT TOTAL PAID</td>
+            <td class="text-right">Rs. {{ number_format($accountPaid, 2) }}</td>
+        </tr>
+        <tr>
+            <td class="label" style="background:#0b3a66;">ACCOUNT OUTSTANDING</td>
+            <td class="text-right">Rs. {{ number_format($accountOutstanding, 2) }}</td>
         </tr>
     </table>
 
     <div class="words">
-        <span class="k">Amount in Words:</span>
+        <span class="k">Amount received in words:</span>
         {{ $amountWords }}
     </div>
+    @if ($accountOutstanding > 0)
+        <div class="words" style="margin-top:4px;">
+            <span class="k">Still due on account:</span>
+            Rs. {{ number_format($accountOutstanding, 2) }}
+            ({{ (int) ($feeSummary['open_count'] ?? 0) }} open invoice(s))
+        </div>
+        @if (! empty($feeSummary['itemized']))
+            <div class="words" style="margin-top:3px;font-size:8.5px;color:#444;">
+                @foreach ($feeSummary['itemized'] as $item)
+                    {{ $item['invoice_number'] }}: Rs. {{ number_format($item['balance'], 2) }}@if (! $loop->last); @endif
+                @endforeach
+            </div>
+        @endif
+    @else
+        <div class="words" style="margin-top:4px;">
+            <span class="k">Account status:</span>
+            All fees paid up to date.
+        </div>
+    @endif
 
     <table class="w-100 bottom">
         <tr>

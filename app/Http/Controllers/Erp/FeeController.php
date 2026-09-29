@@ -6,15 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Models\Invoice;
 use App\Models\Student;
 use App\Services\InvoiceBillingService;
+use App\Services\NotificationService;
+use App\Services\StudentFeeSummaryService;
 use App\Support\BranchScope;
-use App\Support\WhatsApp;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class FeeController extends Controller
 {
     public function __construct(
-        private InvoiceBillingService $billing
+        private InvoiceBillingService $billing,
+        private NotificationService $notifications,
+        private StudentFeeSummaryService $feeSummary
     ) {
         $this->middleware('finance');
     }
@@ -62,47 +65,8 @@ class FeeController extends Controller
             auth()->user()?->isBranchScoped() ? auth()->user()->branch_id : null
         );
 
-        $invoices = BranchScope::invoices()
-            ->with('student')
-            ->whereIn('status', [Invoice::STATUS_PENDING, Invoice::STATUS_PARTIAL, Invoice::STATUS_OVERDUE])
-            ->whereColumn('amount_paid', '<', 'amount')
-            ->orderBy('due_date')
-            ->limit(50)
-            ->get()
-            ->map(function (Invoice $invoice) {
-                $student = $invoice->student;
-                $msg = $this->reminderMessage($invoice);
-                $phone = $student->phone ?: $student->parent_contact;
+        $reminders = $this->notifications->studentsWithOpenBalances();
 
-                return [
-                    'invoice' => $invoice,
-                    'student' => $student,
-                    'message' => $msg,
-                    'whatsapp_url' => $phone ? WhatsApp::waMeUrl($phone, $msg) : null,
-                ];
-            });
-
-        return view('erp.fees.reminders', compact('invoices'));
-    }
-
-    private function reminderMessage(Invoice $invoice): string
-    {
-        $s = $invoice->student;
-        $lines = [
-            'Hello '.$s->name.',',
-            'Fee reminder from Barefoot Martial Arts.',
-            'Invoice: '.$invoice->invoice_number,
-            'Total: '.number_format($invoice->amount, 2),
-            'Paid: '.number_format($invoice->amount_paid, 2),
-            'Balance due: '.number_format($invoice->balanceDue(), 2),
-        ];
-        if ($invoice->due_date) {
-            $lines[] = 'Due date: '.$invoice->due_date->format('M j, Y');
-        }
-        if ($invoice->status === Invoice::STATUS_OVERDUE) {
-            $lines[] = 'This invoice is overdue. Please contact your branch.';
-        }
-
-        return implode("\n", $lines);
+        return view('erp.fees.reminders', compact('reminders'));
     }
 }

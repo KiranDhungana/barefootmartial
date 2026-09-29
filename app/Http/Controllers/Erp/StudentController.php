@@ -72,7 +72,7 @@ class StudentController extends Controller
             'certificates' => 'nullable|array',
             'certificates.*.file' => 'nullable|file|mimes:jpeg,jpg,png,webp,gif,pdf|max:10240',
             'certificates.*.title' => 'nullable|string|max:255',
-            'certificates.*.certificate_type' => 'nullable|in:general,belt',
+            'certificates.*.certificate_type' => 'nullable|in:normal,general,belt,achievement,certification',
             'certificates.*.issued_on' => 'nullable|date',
         ]);
 
@@ -106,12 +106,18 @@ class StudentController extends Controller
                 $title = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) ?: 'Certificate';
             }
 
+            $rawType = $row['certificate_type'] ?? StudentCertificate::TYPE_NORMAL;
+            $type = $rawType === StudentCertificate::TYPE_GENERAL
+                ? StudentCertificate::TYPE_NORMAL
+                : $rawType;
+            if (! array_key_exists($type, StudentCertificate::typeOptions())) {
+                $type = StudentCertificate::TYPE_NORMAL;
+            }
+
             StudentCertificate::create([
                 'student_id' => $student->id,
                 'title' => $title,
-                'certificate_type' => ($row['certificate_type'] ?? StudentCertificate::TYPE_GENERAL) === StudentCertificate::TYPE_BELT
-                    ? StudentCertificate::TYPE_BELT
-                    : StudentCertificate::TYPE_GENERAL,
+                'certificate_type' => $type,
                 'file_url' => $uploaded['url'],
                 'public_id' => $uploaded['public_id'],
                 'resource_type' => $uploaded['resource_type'],
@@ -170,7 +176,9 @@ class StudentController extends Controller
             && $student->isPendingRegistration()
             && count($missingOfficial) === 0;
 
-        $feeReminderMessage = $this->feeReminderMessage($student, $canViewFinance);
+        $feeReminderMessage = $canViewFinance
+            ? app(\App\Services\StudentFeeSummaryService::class)->reminderMessage($student)
+            : 'Hello '.$student->name.",\nThis is a reminder from Barefoot Martial Arts regarding your academy fees.";
         $whatsappUrl = WhatsApp::waMeUrl($student->phone ?: $student->parent_contact, $feeReminderMessage);
 
         $user = auth()->user();
@@ -199,24 +207,6 @@ class StudentController extends Controller
             'activeTab',
             'eventsForCertificates'
         ));
-    }
-
-    private function feeReminderMessage(Student $student, bool $canViewFinance): string
-    {
-        $pending = $canViewFinance
-            ? $student->invoices()->where('status', 'pending')->orderBy('due_date')->first()
-            : null;
-        $lines = [
-            'Hello '.$student->name.',',
-            'This is a reminder from Barefoot Martial Arts regarding your academy fees.',
-        ];
-        if ($pending) {
-            $lines[] = 'Invoice '.$pending->invoice_number.' — amount '.$pending->amount.' — due '.optional($pending->due_date)->format('M j, Y').'.';
-        } else {
-            $lines[] = 'Please contact us if you have questions about your balance.';
-        }
-
-        return implode("\n", $lines);
     }
 
     public function edit(Student $student): View

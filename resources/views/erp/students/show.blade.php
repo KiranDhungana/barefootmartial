@@ -272,7 +272,7 @@
                                 <label class="form-label">Type <span class="text-danger">*</span></label>
                                 <select name="certificate_type" id="certificate_type" class="form-select rounded-3" required>
                                     @foreach (\App\Models\StudentCertificate::attachTypeOptions() as $value => $label)
-                                        <option value="{{ $value }}" @selected(old('certificate_type', 'general') === $value)>{{ $label }}</option>
+                                        <option value="{{ $value }}" @selected(old('certificate_type', 'normal') === $value)>{{ $label }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -394,9 +394,27 @@
                 </div>
 
                 <div class="panel-card mb-3">
-                    <div class="panel-heading">Attached certificates</div>
+                    <div class="panel-heading d-flex flex-wrap justify-content-between align-items-center gap-2">
+                        <span>Uploaded certificates</span>
+                        <form method="get" class="d-flex align-items-center gap-2 mb-0">
+                            <input type="hidden" name="tab" value="certificates">
+                            <select name="cert_type" class="form-select form-select-sm rounded-pill" style="width:auto"
+                                onchange="this.form.submit()">
+                                <option value="">All types</option>
+                                @foreach (\App\Models\StudentCertificate::typeOptions() as $value => $label)
+                                    <option value="{{ $value }}" @selected(request('cert_type') === $value)>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </form>
+                    </div>
                     <div class="panel-body p-3">
-                        @forelse ($student->certificates as $cert)
+                        @php
+                            $uploadedCerts = $student->certificates;
+                            if ($filter = request('cert_type')) {
+                                $uploadedCerts = $uploadedCerts->filter(fn ($c) => $c->normalizedType() === $filter)->values();
+                            }
+                        @endphp
+                        @forelse ($uploadedCerts as $cert)
                             <div class="border rounded-4 p-3 mb-3">
                                 <div class="row g-3 align-items-start">
                                     <div class="col-md-3 text-center">
@@ -423,12 +441,15 @@
                                                     <label class="form-label small">Title</label>
                                                     <input type="text" name="title" class="form-control form-control-sm rounded-3"
                                                         value="{{ $cert->title }}" required>
+                                                    <div class="small text-muted mt-1">
+                                                        <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary">{{ $cert->typeLabel() }}</span>
+                                                    </div>
                                                 </div>
                                                 <div class="col-md-6">
                                                     <label class="form-label small">Type</label>
                                                     <select name="certificate_type" class="form-select form-select-sm rounded-3" required>
                                                         @foreach (\App\Models\StudentCertificate::typeOptions() as $value => $label)
-                                                            <option value="{{ $value }}" @selected(($cert->certificate_type ?: 'general') === $value)>{{ $label }}</option>
+                                                            <option value="{{ $value }}" @selected(($cert->normalizedType()) === $value)>{{ $label }}</option>
                                                         @endforeach
                                                     </select>
                                                 </div>

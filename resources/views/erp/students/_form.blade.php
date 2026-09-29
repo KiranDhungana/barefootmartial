@@ -178,7 +178,7 @@
                         <label class="form-label small">Type</label>
                         <select name="certificates[{{ $i }}][certificate_type]" class="form-select form-select-sm rounded-3">
                             @foreach (\App\Models\StudentCertificate::typeOptions() as $value => $label)
-                                <option value="{{ $value }}" @selected(old('certificates.'.$i.'.certificate_type', 'general') === $value)>{{ $label }}</option>
+                                <option value="{{ $value }}" @selected(old('certificates.'.$i.'.certificate_type', 'normal') === $value)>{{ $label }}</option>
                             @endforeach
                         </select>
                     </div>

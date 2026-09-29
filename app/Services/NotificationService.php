@@ -12,20 +12,22 @@ use Illuminate\Support\Facades\Mail;
 
 class NotificationService
 {
-    public function feeReminderMessage(Invoice $invoice): string
-    {
-        $s = $invoice->student;
-        $lines = [
-            'Hello '.$s->name.',',
-            'Fee reminder from Barefoot Martial Arts.',
-            'Invoice: '.$invoice->invoice_number,
-            'Balance due: '.number_format($invoice->balanceDue(), 2),
-        ];
-        if ($invoice->due_date) {
-            $lines[] = 'Due: '.$invoice->due_date->format('M j, Y');
-        }
+    public function __construct(
+        private StudentFeeSummaryService $feeSummary
+    ) {
+    }
 
-        return implode("\n", $lines);
+    /**
+     * Consolidated reminder for the student (all open invoices).
+     * Kept Invoice argument for backward compatibility with existing callers.
+     */
+    public function feeReminderMessage(Invoice|Student $invoiceOrStudent): string
+    {
+        $student = $invoiceOrStudent instanceof Student
+            ? $invoiceOrStudent
+            : $invoiceOrStudent->student;
+
+        return $this->feeSummary->reminderMessage($student);
     }
 
     public function sendEmail(string $to, string $subject, string $body, ?Student $student = null, ?int $sentBy = null): bool
@@ -66,6 +68,8 @@ class NotificationService
     }
 
     /**
+     * Open invoices (legacy list). Prefer studentsWithOpenBalances() for reminders.
+     *
      * @return Collection<int, Invoice>
      */
     public function overdueInvoicesForReminders(): Collection
@@ -77,10 +81,45 @@ class NotificationService
             ->get();
     }
 
+    /**
+     * One entry per student with consolidated outstanding balance.
+     *
+     * @return Collection<int, array{student: Student, summary: array, message: string, whatsapp_url: ?string}>
+     */
+    public function studentsWithOpenBalances(): Collection
+    {
+        $invoices = $this->overdueInvoicesForReminders();
+
+        return $invoices
+            ->groupBy('student_id')
+            ->map(function (Collection $group) {
+                /** @var Student $student */
+                $student = $group->first()->student;
+                $summary = $this->feeSummary->summary($student);
+                $message = $this->feeSummary->reminderMessage($student);
+                $phone = $student->phone ?: $student->parent_contact;
+
+                return [
+                    'student' => $student,
+                    'summary' => $summary,
+                    'message' => $message,
+                    'whatsapp_url' => $phone ? WhatsApp::waMeUrl($phone, $message) : null,
+                ];
+            })
+            ->filter(fn (array $row) => ($row['summary']['total_outstanding'] ?? 0) > 0)
+            ->sortBy(fn (array $row) => $row['student']->name)
+            ->values();
+    }
+
     public function whatsappUrlForInvoice(Invoice $invoice): ?string
     {
-        $phone = $invoice->student->phone ?: $invoice->student->parent_contact;
+        return $this->whatsappUrlForStudent($invoice->student);
+    }
 
-        return $phone ? WhatsApp::waMeUrl($phone, $this->feeReminderMessage($invoice)) : null;
+    public function whatsappUrlForStudent(Student $student): ?string
+    {
+        $phone = $student->phone ?: $student->parent_contact;
+
+        return $phone ? WhatsApp::waMeUrl($phone, $this->feeReminderMessage($student)) : null;
     }
 }

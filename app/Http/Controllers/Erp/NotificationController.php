@@ -27,7 +27,7 @@ class NotificationController extends Controller
             ->limit(100)
             ->get();
 
-        $overdue = $this->notifications->overdueInvoicesForReminders();
+        $overdue = $this->notifications->studentsWithOpenBalances();
 
         return view('erp.notifications.index', compact('logs', 'overdue'));
     }
@@ -80,12 +80,20 @@ class NotificationController extends Controller
     public function sendInvoiceReminder(Invoice $invoice): RedirectResponse
     {
         BranchScope::assertStudentAccess($invoice->student);
-        $body = $this->notifications->feeReminderMessage($invoice);
         $student = $invoice->student;
+        $body = $this->notifications->feeReminderMessage($student);
         $email = filter_var($student->parent_contact, FILTER_VALIDATE_EMAIL) ? $student->parent_contact : null;
+        $summaryOutstanding = app(\App\Services\StudentFeeSummaryService::class)
+            ->summary($student)['total_outstanding'];
 
         if ($email) {
-            $this->notifications->sendEmail($email, 'Fee reminder — '.$invoice->invoice_number, $body, $student, auth()->id());
+            $this->notifications->sendEmail(
+                $email,
+                'Fee reminder — total outstanding Rs. '.number_format($summaryOutstanding, 2),
+                $body,
+                $student,
+                auth()->id()
+            );
         } else {
             $phone = $student->phone ?: $student->parent_contact;
             if ($phone) {
@@ -93,6 +101,6 @@ class NotificationController extends Controller
             }
         }
 
-        return back()->with('success', 'Reminder queued/logged.');
+        return back()->with('success', 'Reminder queued/logged with consolidated outstanding balance.');
     }
 }

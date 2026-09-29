@@ -3,6 +3,7 @@
     'invoice' => $invoice,
     'payment' => $payment,
     'qrSvg' => $qrSvg ?? null,
+    'feeSummary' => $feeSummary ?? null,
     'receiptNumber' => $payment->receipt_number,
     'documentDate' => $payment->paid_at ?? now(),
     'paymentMethod' => $payment->payment_method,

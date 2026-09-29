@@ -2,7 +2,7 @@
 
 @section('title', 'Certificates — Student portal')
 @section('page_title', 'Certificates')
-@section('page_subtitle', 'Belt, event, and normal certificates')
+@section('page_subtitle', 'Normal, Event, Belt, Achievement, and Certifications')
 
 @section('content')
     @if ($students->isEmpty())
@@ -16,14 +16,18 @@
                     'beltPromotions' => $beltPromotions,
                     'beltCertificates' => $beltCertificates,
                     'eventCertificates' => $eventCertificates,
-                    'studentCertificates' => $studentCertificates,
+                    'normalCertificates' => $normalCertificates,
+                    'achievementCertificates' => $achievementCertificates,
+                    'certificationCertificates' => $certificationCertificates,
                 ])
             </div>
 
             @if ($beltPromotions->isEmpty()
                 && $beltCertificates->isEmpty()
                 && $eventCertificates->isEmpty()
-                && $studentCertificates->isEmpty())
+                && $normalCertificates->isEmpty()
+                && $achievementCertificates->isEmpty()
+                && $certificationCertificates->isEmpty())
                 <div class="panel-card">
                     <div class="panel-body p-4 text-center text-muted">
                         No certificates have been attached yet.

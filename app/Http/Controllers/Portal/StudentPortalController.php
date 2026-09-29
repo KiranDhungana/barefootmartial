@@ -145,11 +145,13 @@ class StudentPortalController extends Controller
 
         $invoice->load(['student.branch', 'lineItems', 'branch', 'payments']);
         $qrSvg = $qr->svg($invoice->student->verifyUrl(), 90);
+        $feeSummary = app(\App\Services\StudentFeeSummaryService::class)->summary($invoice->student);
 
         return Pdf::loadView('erp.pdf.receipt', [
             'invoice' => $invoice,
             'payment' => $payment,
             'qrSvg' => $qrSvg,
+            'feeSummary' => $feeSummary,
         ])->setPaper('a4')->download($payment->receipt_number.'.pdf');
     }
 
@@ -158,26 +160,37 @@ class StudentPortalController extends Controller
         ['students' => $students, 'student' => $student] = $this->resolveStudentContext();
 
         $beltPromotions = collect();
-        $beltCertificates = collect();
+        $certificatesByType = [
+            StudentCertificate::TYPE_BELT => collect(),
+            StudentCertificate::TYPE_NORMAL => collect(),
+            StudentCertificate::TYPE_ACHIEVEMENT => collect(),
+            StudentCertificate::TYPE_CERTIFICATION => collect(),
+        ];
         $eventCertificates = collect();
-        $studentCertificates = collect();
 
         if ($student) {
             $beltPromotions = $student->beltPromotions()->orderByDesc('promoted_at')->get();
-            $allUploaded = $student->certificates()->get();
-            $beltCertificates = $allUploaded->where('certificate_type', StudentCertificate::TYPE_BELT)->values();
-            $studentCertificates = $allUploaded->where('certificate_type', '!=', StudentCertificate::TYPE_BELT)->values();
             $eventCertificates = $student->eventCertificates()->with('event')->get();
+
+            foreach ($student->certificates()->get() as $cert) {
+                $type = $cert->normalizedType();
+                if (! isset($certificatesByType[$type])) {
+                    $type = StudentCertificate::TYPE_NORMAL;
+                }
+                $certificatesByType[$type]->push($cert);
+            }
         }
 
-        return view('portal.certificates', compact(
-            'students',
-            'student',
-            'beltPromotions',
-            'beltCertificates',
-            'eventCertificates',
-            'studentCertificates'
-        ));
+        return view('portal.certificates', [
+            'students' => $students,
+            'student' => $student,
+            'beltPromotions' => $beltPromotions,
+            'beltCertificates' => $certificatesByType[StudentCertificate::TYPE_BELT],
+            'eventCertificates' => $eventCertificates,
+            'normalCertificates' => $certificatesByType[StudentCertificate::TYPE_NORMAL],
+            'achievementCertificates' => $certificatesByType[StudentCertificate::TYPE_ACHIEVEMENT],
+            'certificationCertificates' => $certificatesByType[StudentCertificate::TYPE_CERTIFICATION],
+        ]);
     }
 
     public function beltCertificatePdf(Student $student, BeltPromotion $promotion): Response

@@ -27,7 +27,7 @@ class StudentCertificateController extends Controller
 
         $data = $request->validate([
             'title' => 'required|string|max:255',
-            'certificate_type' => 'required|in:general,belt,event',
+            'certificate_type' => StudentCertificate::validationRule(includeEvent: true),
             'event_id' => 'nullable|required_if:certificate_type,event|exists:events,id',
             'file' => 'required|file|mimes:jpeg,jpg,png,webp,gif,pdf|max:10240',
             'issued_on' => 'nullable|date',
@@ -39,12 +39,16 @@ class StudentCertificateController extends Controller
             return $this->attachEventCertificate($request, $student, $data);
         }
 
+        $type = $data['certificate_type'] === StudentCertificate::TYPE_GENERAL
+            ? StudentCertificate::TYPE_NORMAL
+            : $data['certificate_type'];
+
         $uploaded = $this->cloudinary->uploadFile($request->file('file'), 'certificates/'.$student->id);
 
         StudentCertificate::create([
             'student_id' => $student->id,
             'title' => $data['title'],
-            'certificate_type' => $data['certificate_type'],
+            'certificate_type' => $type,
             'file_url' => $uploaded['url'],
             'public_id' => $uploaded['public_id'],
             'resource_type' => $uploaded['resource_type'],
@@ -67,15 +71,19 @@ class StudentCertificateController extends Controller
 
         $data = $request->validate([
             'title' => 'required|string|max:255',
-            'certificate_type' => 'required|in:general,belt',
+            'certificate_type' => StudentCertificate::validationRule(includeEvent: false),
             'issued_on' => 'nullable|date',
             'notes' => 'nullable|string|max:1000',
             'file' => 'nullable|file|mimes:jpeg,jpg,png,webp,gif,pdf|max:10240',
         ]);
 
+        $type = $data['certificate_type'] === StudentCertificate::TYPE_GENERAL
+            ? StudentCertificate::TYPE_NORMAL
+            : $data['certificate_type'];
+
         $payload = [
             'title' => $data['title'],
-            'certificate_type' => $data['certificate_type'],
+            'certificate_type' => $type,
             'issued_on' => $data['issued_on'] ?? null,
             'notes' => $data['notes'] ?? null,
         ];

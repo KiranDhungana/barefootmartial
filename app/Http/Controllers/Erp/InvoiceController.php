@@ -162,11 +162,13 @@ class InvoiceController extends Controller
         BranchScope::assertStudentAccess($invoice->student);
 
         $qrSvg = $this->qr->svg($invoice->student->verifyUrl(), 90);
+        $feeSummary = app(\App\Services\StudentFeeSummaryService::class)->summary($invoice->student);
 
         return Pdf::loadView('erp.pdf.receipt', [
             'invoice' => $invoice,
             'payment' => $payment,
             'qrSvg' => $qrSvg,
+            'feeSummary' => $feeSummary,
         ])
             ->setPaper('a4')
             ->download($payment->receipt_number.'.pdf');
@@ -178,10 +180,12 @@ class InvoiceController extends Controller
         BranchScope::assertStudentAccess($invoice->student);
 
         $qrSvg = $this->qr->svg($invoice->student->verifyUrl(), 90);
+        $feeSummary = app(\App\Services\StudentFeeSummaryService::class)->summary($invoice->student);
 
         return Pdf::loadView('erp.pdf.payment-slip', [
             'invoice' => $invoice,
             'qrSvg' => $qrSvg,
+            'feeSummary' => $feeSummary,
         ])
             ->setPaper('a4')
             ->download('payment-receipt-'.$invoice->invoice_number.'.pdf');
